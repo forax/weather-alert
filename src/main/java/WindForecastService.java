@@ -26,6 +26,19 @@ public final class WindForecastService {
     OBJECT_MAPPER =  mapper;
   }
 
+  static String fetch(URI uri) throws IOException {
+    try (var httpClient = HttpClient.newBuilder().build()) {
+      var request = HttpRequest.newBuilder().uri(uri).GET().build();
+      var httpResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+      if (httpResponse.statusCode() != 200) {
+        throw new IOException("API request failed with status code: " + httpResponse.statusCode() +"  " + httpResponse.body());
+      }
+      return httpResponse.body();
+    } catch (InterruptedException e) {
+      throw (InterruptedIOException) new InterruptedIOException().initCause(e);
+    }
+  }
+
   /**
    * Fetches wind speed forecast for a given location
    *
@@ -38,19 +51,9 @@ public final class WindForecastService {
       throws IOException {
 
     var uri = buildApiUrl(latitude, longitude);
-    //System.err.println(uri);
+    System.err.println(uri);
 
-    String body;
-    try (var httpClient = HttpClient.newBuilder().build()) {
-      var request = HttpRequest.newBuilder().uri(uri).GET().build();
-      var httpResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-      if (httpResponse.statusCode() != 200) {
-        throw new IOException("API request failed with status code: " + httpResponse.statusCode());
-      }
-      body = httpResponse.body();
-    } catch (InterruptedException e) {
-      throw (InterruptedIOException) new InterruptedIOException().initCause(e);
-    }
+    var body = fetch(uri);
 
     var response = OBJECT_MAPPER.readValue(body, OpenMeteoResponse.class);
     return response.hourly().windSpeed10m();
@@ -70,7 +73,7 @@ public final class WindForecastService {
     }
   }
 
-  public value record WindSpeed(float windSpeed) {
+  public /*value*/ record WindSpeed(float windSpeed) {
     public WindSpeed(double value) {
       this((float) value);
     }
