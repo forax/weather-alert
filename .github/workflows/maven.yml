@@ -22,4 +22,6 @@ jobs:
         export JAVA_HOME=$HOME/jdk/jdk
         $JAVA_HOME/bin/java -version
     - name: Build with Maven
-      run: mvn -B package --file pom.xml
+      run: |
+        mvn --version
+        mvn -B package --file pom.xml
