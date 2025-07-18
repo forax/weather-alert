@@ -17,10 +17,11 @@ jobs:
       run: |
         wget https://builds.shipilev.net/openjdk-jdk-valhalla/openjdk-jdk-valhalla-linux-x86_64-server.tar.xz
         unxz openjdk-jdk-valhalla-linux-x86_64-server.tar.xz
+        gzip openjdk-jdk-valhalla-linux-x86_64-server.tar
     - uses: actions/setup-java@v4
       with:
         distribution: 'jdkfile'
-        jdkFile: openjdk-jdk-valhalla-linux-x86_64-server.tar
+        jdkFile: openjdk-jdk-valhalla-linux-x86_64-server.tar.gz
         java-version: '25.0.0'
         architecture: x64
     - name: Build with Maven
