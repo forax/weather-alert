@@ -18,6 +18,7 @@ jobs:
         wget https://builds.shipilev.net/openjdk-jdk-valhalla/openjdk-jdk-valhalla-linux-x86_64-server.tar.xz
         mkdir -p $HOME/jdk
         tar -xf openjdk-jdk-valhalla-linux-x86_64-server.tar.xz -C $HOME/jdk
+        ls -l $HOME/jdk
         export JAVA_HOME=$HOME/jdk/jdk-valhalla
         $JAVA_HOME/bin/java -version
     - name: Build with Maven
