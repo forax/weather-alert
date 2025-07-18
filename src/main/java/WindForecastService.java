@@ -73,7 +73,7 @@ public final class WindForecastService {
     }
   }
 
-  public /*value*/ record WindSpeed(float windSpeed) {
+  public value record WindSpeed(float windSpeed) {
     public WindSpeed(double value) {
       this((float) value);
     }
