@@ -14,7 +14,6 @@
     <description>A Java library for fetching wind speed forecasts from Open-Meteo API</description>
 
     <dependencies>
-        <!-- Jackson for JSON processing -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
