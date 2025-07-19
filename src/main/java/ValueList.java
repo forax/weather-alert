@@ -8,7 +8,7 @@ final class ValueList<E> extends AbstractList<E> {
   private int size;
 
   @SuppressWarnings("unchecked")
-  public ValueList(Class<?> valueClass) {
+  public ValueList(Class<? extends E> valueClass) {
     if (!valueClass.isValue()) {
       throw new IllegalArgumentException("must be a value class");
     }
