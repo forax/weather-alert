@@ -9,6 +9,19 @@ import java.util.Objects;
 import jdk.internal.value.ValueClass;
 
 final class ValueList<E> extends AbstractList<E> {
+  private static final boolean NULL_RESTRICTED_ARRAY_AVAILABLE;
+  static {
+    boolean nullRestrictedArrayAvailable;
+    try {
+      var _ = ValueClass.class;
+      nullRestrictedArrayAvailable = true;
+    } catch (IllegalAccessError _) {
+      nullRestrictedArrayAvailable = false;
+      System.err.println("WARNING: null restricted array not available !");
+    }
+    NULL_RESTRICTED_ARRAY_AVAILABLE = nullRestrictedArrayAvailable;
+  }
+
   private static Object defaultIdentityValue(Class<?> type) {
     var array = Array.newInstance(type, 1);
     return Array.get(array, 0);
@@ -62,9 +75,9 @@ final class ValueList<E> extends AbstractList<E> {
       throw new IllegalArgumentException("must be a value class");
     }
     var defaultValue = DEFAULT_VALUE.get(valueClass);
-    this.values = (E[]) (defaultValue == null ?
-        Array.newInstance(valueClass, 0) :
-        ValueClass.newNullRestrictedAtomicArray(valueClass, 0, defaultValue));
+    this.values = (E[]) (NULL_RESTRICTED_ARRAY_AVAILABLE && defaultValue != null ?
+        ValueClass.newNullRestrictedAtomicArray(valueClass, 0, defaultValue) :
+        Array.newInstance(valueClass, 0));
   }
 
   @Override
@@ -81,7 +94,7 @@ final class ValueList<E> extends AbstractList<E> {
 
   private void resize() {
     var newSize = Math.max(16, values.length << 1);
-    if (ValueClass.isNullRestrictedArray(values)) {
+    if (NULL_RESTRICTED_ARRAY_AVAILABLE && ValueClass.isNullRestrictedArray(values)) {
       var valueClass = values.getClass().getComponentType();
       var defaultValue = DEFAULT_VALUE.get(valueClass);
       @SuppressWarnings("unchecked")
@@ -106,7 +119,7 @@ final class ValueList<E> extends AbstractList<E> {
     if (size == values.length) {
       resize();
     }
-    if (element == null && ValueClass.isNullRestrictedArray(values)) {
+    if (NULL_RESTRICTED_ARRAY_AVAILABLE && element == null && ValueClass.isNullRestrictedArray(values)) {
       expandToNullableArray();
     }
     Array.set(values, size++, element);
