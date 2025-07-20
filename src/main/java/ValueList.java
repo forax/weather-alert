@@ -68,7 +68,7 @@ final class ValueList<E> extends AbstractList<E> {
   @SuppressWarnings("unchecked")
   public E get(int index) {
     Objects.checkIndex(index, size);
-    return (E) Array.get(values, index);
+    return values[index];
   }
 
   private void resize() {
@@ -103,7 +103,7 @@ final class ValueList<E> extends AbstractList<E> {
     if (NULL_RESTRICTED_ARRAY_AVAILABLE && element == null && ValueClass.isNullRestrictedArray(values)) {
       expandToNullableArray();
     }
-    Array.set(values, size++, element);
+    values[size++] = element;
     return true;
   }
 }
