@@ -350,4 +350,58 @@ public final class ValueListTest {
     }
     assertEquals(expectedData.length, index);
   }
+
+  @Test
+  @DisplayName("Should handle large number of elements efficiently")
+  public void testLargeScaleOperations() {
+    var list = new ValueList<>(TestValue.class);
+    
+    for (int i = 0; i < 1_000_000; i++) {
+        list.add(new TestValue("element" + i));
+    }
+    
+    assertEquals(1_000_000, list.size());
+    
+    // Verify random access works correctly
+    assertEquals("element0", list.get(0).data());
+    assertEquals("element500000", list.get(500_000).data());
+    assertEquals("element999999", list.get(999_999).data());
+  }
+
+  @Test
+  @DisplayName("Should handle empty value class")
+  public void testEmptyValueClass() {
+    value record EmptyValue() {}
+    
+    var emptyValueList = new ValueList<>(EmptyValue.class);
+    emptyValueList.add(new EmptyValue());
+    
+    assertEquals(1, emptyValueList.size());
+    assertEquals(new EmptyValue(), emptyValueList.getFirst());
+  }
+
+  @Test
+  @DisplayName("Should handle a value class with several fields")
+  public void testSeveralFieldsValueClass() {
+    value record CompositeValue(String name, int id, boolean flag) {}
+
+    var compositeList = new ValueList<>(CompositeValue.class);
+    compositeList.add(new CompositeValue("test", 42, true));
+
+    assertEquals(1, compositeList.size());
+    assertEquals(new CompositeValue("test", 42, true), compositeList.getFirst());
+  }
+
+  @Test
+  @DisplayName("Should handle a value class inside a value class")
+  public void testSeveralValueClasses() {
+    value record ByteValue(byte val1) {}
+    value record TwoByteValue(ByteValue v1, ByteValue v2) {}
+
+    var twoByteList = new ValueList<>(TwoByteValue.class);
+    twoByteList.add(new TwoByteValue(new ByteValue((byte) 1), new ByteValue((byte) 2)));
+
+    assertEquals(1, twoByteList.size());
+    assertEquals(new TwoByteValue(new ByteValue((byte) 1), new ByteValue((byte) 2)), twoByteList.getFirst());
+  }
 }
