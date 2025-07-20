@@ -7,20 +7,34 @@ import jdk.internal.misc.Unsafe;
 
 final class ValueList<E> extends AbstractList<E> {
   private static final boolean NULL_RESTRICTED_ARRAY_AVAILABLE;
-  private static final Object UNSAFE;
+  private static final ClassValue<Object> DEFAULT_VALUE;
   static {
     boolean nullRestrictedArrayAvailable;
-    Object unsafe;
+    ClassValue<Object> defaultValue;
     try {
-      var _ = ValueClass.class;
-      unsafe = Unsafe.getUnsafe();
+      var _ = ValueClass.class;  // check that ValueClass is visible
+      defaultValue = new ClassValue<>() {
+        private static final Unsafe UNSAFE = Unsafe.getUnsafe();
+
+        @Override
+        protected Object computeValue(Class<?> type) {
+          if (!type.isValue()) {
+            return defaultIdentityValue(type);
+          }
+          try {
+            return UNSAFE.allocateInstance(type);
+          } catch (InstantiationException e) {
+            throw new AssertionError(e);
+          }
+        }
+      };
       nullRestrictedArrayAvailable = true;
     } catch (IllegalAccessError _) {
-      unsafe = null;
+      defaultValue = null;
       nullRestrictedArrayAvailable = false;
       System.err.println("WARNING: null restricted array not available !");
     }
-    UNSAFE = unsafe;
+    DEFAULT_VALUE = defaultValue;
     NULL_RESTRICTED_ARRAY_AVAILABLE = nullRestrictedArrayAvailable;
   }
 
@@ -28,20 +42,6 @@ final class ValueList<E> extends AbstractList<E> {
     var array = Array.newInstance(type, 1);
     return Array.get(array, 0);
   }
-
-  private static final ClassValue<Object> DEFAULT_VALUE = new ClassValue<>() {
-    @Override
-    protected Object computeValue(Class<?> type) {
-      if (!type.isValue()) {
-        return defaultIdentityValue(type);
-      }
-      try {
-        return ((Unsafe) UNSAFE).allocateInstance(type);
-      } catch (InstantiationException e) {
-        throw new AssertionError(e);
-      }
-    }
-  };
 
   private E[] values;
   private int size;
