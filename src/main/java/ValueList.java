@@ -65,7 +65,6 @@ final class ValueList<E> extends AbstractList<E> {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public E get(int index) {
     Objects.checkIndex(index, size);
     return values[index];
