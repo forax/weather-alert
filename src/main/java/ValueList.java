@@ -1,24 +1,26 @@
 import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InaccessibleObjectException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.RecordComponent;
 import java.util.AbstractList;
 import java.util.Arrays;
 import java.util.Objects;
 import jdk.internal.value.ValueClass;
+import jdk.internal.misc.Unsafe;
 
 final class ValueList<E> extends AbstractList<E> {
   private static final boolean NULL_RESTRICTED_ARRAY_AVAILABLE;
+  private static final Object UNSAFE;
   static {
     boolean nullRestrictedArrayAvailable;
+    Object unsafe;
     try {
       var _ = ValueClass.class;
+      unsafe = Unsafe.getUnsafe();
       nullRestrictedArrayAvailable = true;
     } catch (IllegalAccessError _) {
+      unsafe = null;
       nullRestrictedArrayAvailable = false;
       System.err.println("WARNING: null restricted array not available !");
     }
+    UNSAFE = unsafe;
     NULL_RESTRICTED_ARRAY_AVAILABLE = nullRestrictedArrayAvailable;
   }
 
@@ -33,34 +35,9 @@ final class ValueList<E> extends AbstractList<E> {
       if (!type.isValue()) {
         return defaultIdentityValue(type);
       }
-      Class<?>[] types;
-      Constructor<?> constructor;
-      if (type.isRecord()) {
-        types = Arrays.stream(type.getRecordComponents())
-            .map(RecordComponent::getType)
-            .toArray(Class<?>[]::new);
-        try {
-          constructor = type.getDeclaredConstructor(types);
-        } catch (NoSuchMethodException e) {
-          throw new AssertionError(e);
-        }
-      } else {
-        var constructors = type.getDeclaredConstructors();
-        if (constructors.length != 1) {
-          return defaultIdentityValue(type);
-        }
-        constructor = constructors[0];
-        types = constructor.getParameterTypes();
-      }
-      var defaultValues = Arrays.stream(types)
-          .map(DEFAULT_VALUE::get)
-          .toArray();
       try {
-        constructor.setAccessible(true);
-        return constructor.newInstance(defaultValues);
-      } catch (InvocationTargetException | InaccessibleObjectException _) {
-        return defaultIdentityValue(type);
-      } catch(IllegalAccessException | InstantiationException e) {
+        return ((Unsafe) UNSAFE).allocateInstance(type);
+      } catch (InstantiationException e) {
         throw new AssertionError(e);
       }
     }
@@ -74,10 +51,12 @@ final class ValueList<E> extends AbstractList<E> {
     if (!valueClass.isValue()) {
       throw new IllegalArgumentException("must be a value class");
     }
-    var defaultValue = DEFAULT_VALUE.get(valueClass);
-    this.values = (E[]) (NULL_RESTRICTED_ARRAY_AVAILABLE && defaultValue != null ?
-        ValueClass.newNullRestrictedAtomicArray(valueClass, 0, defaultValue) :
-        Array.newInstance(valueClass, 0));
+    if (NULL_RESTRICTED_ARRAY_AVAILABLE) {
+      var defaultValue = DEFAULT_VALUE.get(valueClass);
+      this.values = (E[]) ValueClass.newNullRestrictedAtomicArray(valueClass, 0, defaultValue);
+      return;
+    }
+    this.values = (E[]) Array.newInstance(valueClass, 0);
   }
 
   @Override
