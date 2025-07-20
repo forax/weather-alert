@@ -29,7 +29,7 @@ public final class ValueListTest {
   }
 
   @Test
-  @DisplayName("Should throw IllegalArgumentException for null class")
+  @DisplayName("Should throw NullPointerException for null class")
   public void testConstructorWithNullClass() {
     assertThrows(NullPointerException.class,
         () -> new ValueList<>(null));
