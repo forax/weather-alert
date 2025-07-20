@@ -81,14 +81,16 @@ final class ValueList<E> extends AbstractList<E> {
       System.arraycopy(values, 0, newArray, 0, size);
       values = newArray;
     } else {
+      // Arrays.copyOf only supports nullable arrays
       values = Arrays.copyOf(values, newSize);
     }
   }
 
   private void expandToNullableArray() {
     var valueClass = values.getClass().getComponentType();
+    var defaultValue = DEFAULT_VALUE.get(valueClass);
     @SuppressWarnings("unchecked")
-    var newArray = (E[]) Array.newInstance(valueClass, values.length);
+    var newArray = (E[]) ValueClass.newNullableAtomicArray(valueClass, values.length);
     System.arraycopy(values, 0, newArray, 0, size);
     values = newArray;
   }
