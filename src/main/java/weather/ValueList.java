@@ -45,7 +45,6 @@ public final class ValueList<E> extends AbstractList<E> {
     if (!valueClass.isValue()) {
       throw new IllegalArgumentException("must be a value class");
     }
-    //this.values = (E[]) new Object[initialCapacity];
     if (NULL_RESTRICTED_ARRAY_AVAILABLE) {
       var defaultValue = DEFAULT_VALUE.get(valueClass);
       this.values = (E[]) ValueClass.newNullRestrictedAtomicArray(valueClass, initialCapacity, defaultValue);
