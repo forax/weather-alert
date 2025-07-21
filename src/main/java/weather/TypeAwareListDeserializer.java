@@ -18,7 +18,7 @@ final class TypeAwareListDeserializer extends StdDeserializer<List<?>> implement
     super(type);
   }
 
-  private List<Object> createList(JavaType contentType) {
+  private static List<Object> createList(JavaType contentType) {
     var rawClass = contentType.getRawClass();
     if (rawClass.isValue()) {
       return new ValueList<>(rawClass);
