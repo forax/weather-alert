@@ -14,13 +14,10 @@ final class ValueList<E> extends AbstractList<E> {
     try {
       var _ = ValueClass.class;  // check that ValueClass is visible
       defaultValue = new ClassValue<>() {
-        private static final Unsafe UNSAFE = Unsafe.getUnsafe();
+        private static final Unsafe UNSAFE = Unsafe.getUnsafe();  // check that Unsafe is visible
 
         @Override
         protected Object computeValue(Class<?> type) {
-          if (!type.isValue()) {
-            return defaultIdentityValue(type);
-          }
           try {
             return UNSAFE.allocateInstance(type);
           } catch (InstantiationException e) {
@@ -36,11 +33,6 @@ final class ValueList<E> extends AbstractList<E> {
     }
     DEFAULT_VALUE = defaultValue;
     NULL_RESTRICTED_ARRAY_AVAILABLE = nullRestrictedArrayAvailable;
-  }
-
-  private static Object defaultIdentityValue(Class<?> type) {
-    var array = Array.newInstance(type, 1);
-    return Array.get(array, 0);
   }
 
   private E[] values;
