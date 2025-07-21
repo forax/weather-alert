@@ -66,7 +66,7 @@ public class ListIterationBenchmark {
     }
   }
 
-  @Benchmark
+  //@Benchmark
   public int sumArrayList() {
     var sum = 0;
     for (var i = 0; i < arrayList.size(); i++) {
@@ -76,7 +76,7 @@ public class ListIterationBenchmark {
     return sum;
   }
 
-  @Benchmark
+  //@Benchmark
   public int sumValueList() {
     var sum = 0;
     for (var i = 0; i < valueList.size(); i++) {
@@ -86,7 +86,7 @@ public class ListIterationBenchmark {
     return sum;
   }
 
-  @Benchmark
+  //@Benchmark
   @Fork(value = 1, jvmArgs = {
       "--enable-preview",
       "--add-exports=java.base/jdk.internal.value=ALL-UNNAMED",
