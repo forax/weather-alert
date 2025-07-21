@@ -79,7 +79,6 @@ final class ValueList<E> extends AbstractList<E> {
 
   private void expandToNullableArray() {
     var valueClass = values.getClass().getComponentType();
-    var defaultValue = DEFAULT_VALUE.get(valueClass);
     @SuppressWarnings("unchecked")
     var newArray = (E[]) ValueClass.newNullableAtomicArray(valueClass, values.length);
     System.arraycopy(values, 0, newArray, 0, size);
