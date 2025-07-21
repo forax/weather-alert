@@ -1,3 +1,5 @@
+package weather;
+
 import java.lang.reflect.Array;
 import java.util.AbstractList;
 import java.util.Arrays;
@@ -5,7 +7,7 @@ import java.util.Objects;
 import jdk.internal.value.ValueClass;
 import jdk.internal.misc.Unsafe;
 
-final class ValueList<E> extends AbstractList<E> {
+public final class ValueList<E> extends AbstractList<E> {
   private static final boolean NULL_RESTRICTED_ARRAY_AVAILABLE;
   private static final ClassValue<Object> DEFAULT_VALUE;
   static {
@@ -39,16 +41,21 @@ final class ValueList<E> extends AbstractList<E> {
   private int size;
 
   @SuppressWarnings("unchecked")
-  public ValueList(Class<? extends E> valueClass) {
+  public ValueList(Class<? extends E> valueClass, int initialCapacity) {
     if (!valueClass.isValue()) {
       throw new IllegalArgumentException("must be a value class");
     }
+    //this.values = (E[]) new Object[initialCapacity];
     if (NULL_RESTRICTED_ARRAY_AVAILABLE) {
       var defaultValue = DEFAULT_VALUE.get(valueClass);
-      this.values = (E[]) ValueClass.newNullRestrictedAtomicArray(valueClass, 0, defaultValue);
+      this.values = (E[]) ValueClass.newNullRestrictedAtomicArray(valueClass, initialCapacity, defaultValue);
       return;
     }
-    this.values = (E[]) Array.newInstance(valueClass, 0);
+    this.values = (E[]) Array.newInstance(valueClass, initialCapacity);
+  }
+
+  public ValueList(Class<? extends E> valueClass) {
+    this(valueClass, 0);
   }
 
   @Override

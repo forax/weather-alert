@@ -1,3 +1,5 @@
+package weather;
+
 import java.io.IOException;
 
 // Example usage class

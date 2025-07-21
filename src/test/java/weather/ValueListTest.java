@@ -1,3 +1,6 @@
+package weather;
+
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import static org.junit.jupiter.api.Assertions.*;
@@ -43,7 +46,7 @@ public final class ValueListTest {
 
     var result = list.add(element);
 
-    assertTrue(result);
+    Assertions.assertTrue(result);
     assertEquals(1, list.size());
     assertEquals(element, list.get(0));
     assertEquals(element, list.getFirst());
@@ -74,7 +77,7 @@ public final class ValueListTest {
 
     var result = list.add(null);
 
-    assertTrue(result);
+    Assertions.assertTrue(result);
     assertEquals(1, list.size());
     assertNull(list.get(0));
   }
