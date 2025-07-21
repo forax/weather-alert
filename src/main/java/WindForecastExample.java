@@ -1,5 +1,4 @@
 import java.io.IOException;
-import java.net.URISyntaxException;
 
 // Example usage class
 class WindForecastExample {
