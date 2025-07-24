@@ -112,7 +112,7 @@ public final class WeatherService {
   public value record WeatherData(Temperature temperature, Windspeed windspeed, Precipitation precipitation) { }
 
   public value record Temperature(float value) {
-    public Temperature(double value) {
+    public Temperature(double value) {  // used by jackson
       this((float) value);
     }
 
@@ -130,7 +130,7 @@ public final class WeatherService {
       super();
     }
 
-    public Windspeed(double value) {
+    public Windspeed(double value) {  // used by jackson
       this((float) value);
     }
 
@@ -148,7 +148,7 @@ public final class WeatherService {
       super();
     }
 
-    public Precipitation(double value) {
+    public Precipitation(double value) {  // used by jackson
       this((float) value);
     }
 
