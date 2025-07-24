@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
 import java.io.IOException;
@@ -22,13 +23,13 @@ import java.util.List;
 
 public final class WeatherService {
 
-  private static final ObjectMapper OBJECT_MAPPER;
+  private static final ObjectReader OBJECT_READER;
   static {
     var module = new SimpleModule();
     module.addDeserializer(List.class, new TypeAwareListDeserializer(null));
     var mapper = new ObjectMapper();
     mapper.registerModule(module);
-    OBJECT_MAPPER =  mapper;
+    OBJECT_READER =  mapper.reader();
   }
 
   static String fetch(URI uri) throws IOException {
@@ -79,7 +80,7 @@ public final class WeatherService {
       storeIntoCache(uri, body);
     }
 
-    var response = OBJECT_MAPPER.readValue(body, OpenMeteoResponse.class);
+    var response = OBJECT_READER.readValue(body, OpenMeteoResponse.class);
     var data = response.hourly();
     if (data.temperatures.size() != data.windspeeds.size() || data.temperatures.size() != data.precipitations.size()) {
       throw new IllegalStateException("temperature size != windspeed size or precipitation size != precipitation size");
