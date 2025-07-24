@@ -1,5 +1,6 @@
 package weather;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -112,7 +113,8 @@ public final class WeatherService {
   public value record WeatherData(Temperature temperature, Windspeed windspeed, Precipitation precipitation) { }
 
   public value record Temperature(float value) {
-    public Temperature(double value) {  // used by jackson
+    @JsonCreator
+    public Temperature(double value) {
       this((float) value);
     }
 
@@ -130,7 +132,8 @@ public final class WeatherService {
       super();
     }
 
-    public Windspeed(double value) {  // used by jackson
+    @JsonCreator
+    public Windspeed(double value) {
       this((float) value);
     }
 
@@ -148,7 +151,8 @@ public final class WeatherService {
       super();
     }
 
-    public Precipitation(double value) {  // used by jackson
+    @JsonCreator
+    public Precipitation(double value) {
       this((float) value);
     }
 
