@@ -123,6 +123,13 @@ public final class WeatherService {
   }
 
   public value record Windspeed(float value) {
+    public Windspeed {
+      if (value < 0) {
+        throw new IllegalArgumentException("value < 0");
+      }
+      super();
+    }
+
     public Windspeed(double value) {
       this((float) value);
     }
@@ -134,6 +141,13 @@ public final class WeatherService {
   }
 
   public value record Precipitation(float value) {
+    public Precipitation {
+      if (value < 0) {
+        throw new IllegalArgumentException("value < 0");
+      }
+      super();
+    }
+
     public Precipitation(double value) {
       this((float) value);
     }
