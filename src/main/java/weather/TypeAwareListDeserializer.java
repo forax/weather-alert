@@ -34,9 +34,14 @@ final class TypeAwareListDeserializer extends StdDeserializer<List<?>> implement
     var list = createList(contentType);
     if (p.isExpectedStartArrayToken()) {
       var elementDeserializer = ctxt.findRootValueDeserializer(contentType);
-
-      while (p.nextToken() != JsonToken.END_ARRAY) {
-        var element = elementDeserializer.deserialize(p, ctxt);
+      JsonToken token;
+      while ((token = p.nextToken()) != JsonToken.END_ARRAY) {
+        Object element;
+        if (token == JsonToken.VALUE_NULL) {
+          element = elementDeserializer.getNullValue(ctxt);
+        } else {
+          element = elementDeserializer.deserialize(p, ctxt);
+        }
         list.add(element);
       }
     }
