@@ -1,4 +1,4 @@
-package weather;
+package identity.weather;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import util.AggregateList;
+import util.TypeAwareListDeserializer;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
@@ -20,17 +22,11 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.stream.IntStream;
 
 public final class WeatherService {
 
-  private static final ObjectReader OBJECT_READER;
-  static {
-    var module = new SimpleModule();
-    module.addDeserializer(List.class, new TypeAwareListDeserializer(null));
-    var mapper = new ObjectMapper();
-    mapper.registerModule(module);
-    OBJECT_READER =  mapper.reader();
-  }
+  private static final ObjectReader OBJECT_READER = new ObjectMapper().reader();
 
   static String fetch(URI uri) throws IOException {
     try (var httpClient = HttpClient.newBuilder().build()) {
@@ -85,14 +81,13 @@ public final class WeatherService {
     if (data.temperatures.size() != data.windspeeds.size() || data.temperatures.size() != data.precipitations.size()) {
       throw new IllegalStateException("temperature size != windspeed size or precipitation size != precipitation size");
     }
-    //return IntStream.range(0, data.precipitations.size())
-    //    .mapToObj(i -> new WeatherData(
-    //        data.temperatures.get(i),
-    //        data.windspeeds.get(i),
-    //        data.precipitations.get(i)))
-    //    //.toList();
-    //    .collect(Collectors.toCollection(() -> new ValueList<>(WeatherData.class)));
-    return new AggregateList<>(List.of(data.temperatures, data.windspeeds, data.precipitations), WeatherData.class);
+    // use util.AggregateList instead ?
+    return IntStream.range(0, data.precipitations.size())
+        .mapToObj(i -> new WeatherData(
+            data.temperatures.get(i),
+            data.windspeeds.get(i),
+            data.precipitations.get(i)))
+        .toList();
   }
 
   private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -111,11 +106,11 @@ public final class WeatherService {
     }
   }
 
-  public value record LatLong(double latitude, double longitude) {}
+  public record LatLong(double latitude, double longitude) {}
 
-  public value record WeatherData(Temperature temperature, Windspeed windspeed, Precipitation precipitation) { }
+  public record WeatherData(Temperature temperature, Windspeed windspeed, Precipitation precipitation) { }
 
-  public value record Temperature(float value) {
+  public record Temperature(float value) {
     @JsonCreator
     public Temperature(double value) {
       this((float) value);
@@ -135,12 +130,12 @@ public final class WeatherService {
     }
   }
 
-  public value record Windspeed(float value) {
+  public record Windspeed(float value) {
     public Windspeed {
       if (value < 0) {
         throw new IllegalArgumentException("value < 0");
       }
-      super();
+      //super();
     }
 
     @JsonCreator
@@ -158,12 +153,12 @@ public final class WeatherService {
     }
   }
 
-  public value record Precipitation(float value) {
+  public record Precipitation(float value) {
     public Precipitation {
       if (value < 0) {
         throw new IllegalArgumentException("value < 0");
       }
-      super();
+      //super();
     }
 
     @JsonCreator

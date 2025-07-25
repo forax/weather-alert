@@ -1,4 +1,4 @@
-package weather;
+package util;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -8,7 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-public class AggregateList<E extends Record> extends AbstractList<E> {
+public final class AggregateList<E extends Record> extends AbstractList<E> {
   private final List<? extends List<?>> list;
   private final Constructor<E> constructor;
 

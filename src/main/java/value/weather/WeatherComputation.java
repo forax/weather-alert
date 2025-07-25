@@ -1,11 +1,10 @@
-package weather;
-
-import weather.WeatherService.*;
+package value.weather;
 
 import java.util.List;
+import value.weather.WeatherService.*;
 
 public class WeatherComputation {
-  public value record WeatherResult(Temperature minTemperature, Temperature maxTemperature, Windspeed maxWindspeed, Precipitation totalPrecipitation) {
+  public record WeatherResult(Temperature minTemperature, Temperature maxTemperature, Windspeed maxWindspeed, Precipitation totalPrecipitation) {
     WeatherResult compute(WeatherData data) {
       return new WeatherResult(
           minTemperature.min(data.temperature()),
@@ -16,7 +15,11 @@ public class WeatherComputation {
   }
 
   public static WeatherResult compute(List<WeatherData> weatherDataList) {
-    var result = new WeatherResult(new Temperature(Float.MAX_VALUE), new Temperature(Float.MIN_VALUE), new Windspeed(0f), new Precipitation(0f));
+    var result = new WeatherResult(
+        new Temperature(Float.MAX_VALUE),
+        new Temperature(Float.MIN_VALUE),
+        new Windspeed(0f),
+        new Precipitation(0f));
     for(var weatherData : weatherDataList) {
       result = result.compute(weatherData);
     }

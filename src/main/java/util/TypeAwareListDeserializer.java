@@ -1,4 +1,4 @@
-package weather;
+package util;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
@@ -13,8 +13,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-final class TypeAwareListDeserializer extends StdDeserializer<List<?>> implements ContextualDeserializer {
-  TypeAwareListDeserializer(JavaType type) {
+public final class TypeAwareListDeserializer extends StdDeserializer<List<?>> implements ContextualDeserializer {
+  public TypeAwareListDeserializer(JavaType type) {
     super(type);
   }
 
