@@ -115,7 +115,6 @@ public final class WeatherService {
 
   public value record WeatherData(Temperature temperature, Windspeed windspeed, Precipitation precipitation) { }
 
-  /*
   public value record Temperature(float value) {
     @JsonCreator
     public Temperature(double value) {
@@ -133,41 +132,6 @@ public final class WeatherService {
 
     public Temperature max(Temperature temperature) {
       return new Temperature(Math.max(value, temperature.value));
-    }
-  }*/
-
-  public static final value class Temperature {
-    private final short value;  // floatBinary16
-
-    private Temperature(short value) {
-      this.value = value;
-      super();
-    }
-
-    public Temperature(float value) {
-      this(Float.floatToFloat16(value));
-    }
-
-    @JsonCreator
-    public Temperature(double value) {
-      this((float) value);
-    }
-
-    public float value() {
-      return Float.float16ToFloat(value);
-    }
-
-    @Override
-    public String toString() {
-      return value() + " °C";
-    }
-
-    public Temperature min(Temperature temperature) {
-      return new Temperature(Math.min(value(), temperature.value()));
-    }
-
-    public Temperature max(Temperature temperature) {
-      return new Temperature(Math.max(value(), temperature.value()));
     }
   }
 
