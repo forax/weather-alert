@@ -92,8 +92,7 @@ public final class WeatherService {
     //        data.temperatures.get(i),
     //        data.windspeeds.get(i),
     //        data.precipitations.get(i)))
-    //    //.toList();
-    //    .collect(Collectors.toCollection(() -> new ValueList<>(WeatherData.class)));
+    //    .toList();
     return new AggregateList<>(List.of(data.temperatures, data.windspeeds, data.precipitations), WeatherData.class);
   }
 
