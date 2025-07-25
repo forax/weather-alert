@@ -1,5 +1,5 @@
 # weather-alert
-A repository demonstrating how to use value type on a real example
+A repository demonstrating how to use value types on a real example
 
 There are 3 versions:
 1. identity (good old) classes
