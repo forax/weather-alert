@@ -7,7 +7,7 @@ There are 3 versions:
    - [identity WeatherService](src/main/java/identity/weather/WeatherService.java)
    - [identity WeatherComputation](src/main/java/identity/weather/WeatherComputation.java)
 
-2. primitive (good old) types
+2. primitive types
    - [primitive WeatherExample](src/main/java/primitive/weather/WeatherExample.java)
    - [primitive WeatherService](src/main/java/primitive/weather/WeatherService.java) 
    - [primitive WeatherComputation](src/main/java/primitive/weather/WeatherComputation.java)
