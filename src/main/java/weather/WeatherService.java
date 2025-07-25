@@ -66,10 +66,10 @@ public final class WeatherService {
     Files.writeString(cachePath(uri), json);
   }
 
-  public static List<WeatherData> getWeatherData(double latitude, double longitude, LocalDate startDate, LocalDate endDate)
+  public static List<WeatherData> getWeatherData(LatLong latLong, LocalDate startDate, LocalDate endDate)
       throws IOException {
 
-    var uri = buildURI(latitude, longitude, startDate, endDate);
+    var uri = buildURI(latLong, startDate, endDate);
     System.err.println(uri);
 
     String body;
@@ -97,10 +97,10 @@ public final class WeatherService {
 
   private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-  private static URI buildURI(double latitude, double longitude, LocalDate startDate, LocalDate endDate) {
+  private static URI buildURI(LatLong latLong, LocalDate startDate, LocalDate endDate) {
     var names = "temperature_2m,wind_speed_10m,precipitation";
-    var query = "latitude=" + latitude +
-        "&longitude=" + longitude +
+    var query = "latitude=" + latLong.latitude +
+        "&longitude=" + latLong.longitude +
         "&start_date=" + DATE_FORMATTER.format(startDate) +
         "&end_date=" + DATE_FORMATTER.format(endDate) +
         "&hourly=" + names;
@@ -111,8 +111,11 @@ public final class WeatherService {
     }
   }
 
+  public value record LatLong(double latitude, double longitude) {}
+
   public value record WeatherData(Temperature temperature, Windspeed windspeed, Precipitation precipitation) { }
 
+  /*
   public value record Temperature(float value) {
     @JsonCreator
     public Temperature(double value) {
@@ -122,6 +125,49 @@ public final class WeatherService {
     @Override
     public String toString() {
       return value + " °C";
+    }
+
+    public Temperature min(Temperature temperature) {
+      return new Temperature(Math.min(value, temperature.value));
+    }
+
+    public Temperature max(Temperature temperature) {
+      return new Temperature(Math.max(value, temperature.value));
+    }
+  }*/
+
+  public static final value class Temperature {
+    private final short value;  // floatBinary16
+
+    private Temperature(short value) {
+      this.value = value;
+      super();
+    }
+
+    public Temperature(float value) {
+      this(Float.floatToFloat16(value));
+    }
+
+    @JsonCreator
+    public Temperature(double value) {
+      this((float) value);
+    }
+
+    public float value() {
+      return Float.float16ToFloat(value);
+    }
+
+    @Override
+    public String toString() {
+      return value() + " °C";
+    }
+
+    public Temperature min(Temperature temperature) {
+      return new Temperature(Math.min(value(), temperature.value()));
+    }
+
+    public Temperature max(Temperature temperature) {
+      return new Temperature(Math.max(value(), temperature.value()));
     }
   }
 
@@ -142,6 +188,10 @@ public final class WeatherService {
     public String toString() {
       return value + " km/h";
     }
+
+    public Windspeed max(Windspeed windspeed) {
+      return new Windspeed(Math.max(value, windspeed.value));
+    }
   }
 
   public value record Precipitation(float value) {
@@ -160,6 +210,10 @@ public final class WeatherService {
     @Override
     public String toString() {
       return value + " mm";
+    }
+
+    public Precipitation add(Precipitation precipitation) {
+      return new Precipitation(value + precipitation.value);
     }
   }
 
