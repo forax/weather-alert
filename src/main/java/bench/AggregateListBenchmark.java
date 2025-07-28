@@ -45,9 +45,6 @@ public class AggregateListBenchmark {
     }
   }
 
-  private static final AggregateList.Factory<Tuple> FACTORY =
-      AggregateList.factory(MethodHandles.lookup(), Tuple.class);
-
   private final ValueList<Integer> list0 = new ValueList<>(Integer.class, 1024);
   private final ValueList<Integer> list1 = new ValueList<>(Integer.class, 1024);
   {
@@ -58,6 +55,9 @@ public class AggregateListBenchmark {
   }
 
   private final SpecializedList specializedList = new SpecializedList(List.of(list0, list1));
+
+  private static final AggregateList.Factory<Tuple> FACTORY =
+      AggregateList.factory(MethodHandles.lookup(), Tuple.class);
   private final AggregateList<Tuple> aggregateList = FACTORY.create(list0, list1);
 
   @Benchmark
