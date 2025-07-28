@@ -394,9 +394,9 @@ final class AggregateListGenerator {
       @Override
       @SuppressWarnings("unchecked")
       public AggregateList<E> create(List<?> list0, List<?> list1, List<?> list2, List<?> list3, List<?> list4, List<?> list5, List<?> list6, List<?> list7) {
-        checkListSize(list0, list1, list2, list3, list4, list5, list6);
+        checkListSize(list0, list1, list2, list3, list4, list5, list6, list7);
         try {
-          return (AggregateList<E>) mh.invokeExact(list0, list1, list2, list3, list4, list5, list6);
+          return (AggregateList<E>) mh.invokeExact(list0, list1, list2, list3, list4, list5, list6, list7);
         } catch (RuntimeException | Error e) {
           throw e;
         } catch (Throwable e) {
