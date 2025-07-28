@@ -9,13 +9,11 @@ import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
-import util.AggregateGenerator;
+import util.AggregateList;
 import util.ValueList;
 
-import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.util.AbstractList;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -47,8 +45,8 @@ public class AggregateListBenchmark {
     }
   }
 
-  private static final AggregateGenerator.AggregateFactory<Tuple> FACTORY =
-      AggregateGenerator.factory(MethodHandles.lookup(), Tuple.class);
+  private static final AggregateList.Factory<Tuple> FACTORY =
+      AggregateList.factory(MethodHandles.lookup(), Tuple.class);
 
   private final ValueList<Integer> list0 = new ValueList<>(Integer.class, 1024);
   private final ValueList<Integer> list1 = new ValueList<>(Integer.class, 1024);
@@ -60,8 +58,7 @@ public class AggregateListBenchmark {
   }
 
   private final SpecializedList specializedList = new SpecializedList(List.of(list0, list1));
-  //private AggregateList<Tuple> aggregateList = new AggregateList<>(lists, Tuple.class);
-  private final AggregateGenerator.AggregateList<Tuple> aggregateList = FACTORY.create(list0, list1);
+  private final AggregateList<Tuple> aggregateList = FACTORY.create(list0, list1);
 
   @Benchmark
   public int sumSpecializedList() {

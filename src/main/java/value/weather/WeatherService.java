@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import util.AggregateGenerator;
+import util.AggregateList;
 import util.TypeAwareListDeserializer;
 
 import java.io.IOException;
@@ -69,8 +69,8 @@ public final class WeatherService {
     Files.writeString(cachePath(uri), json);
   }
 
-  private static final AggregateGenerator.AggregateFactory<WeatherData> LIST_FACTORY =
-      AggregateGenerator.factory(MethodHandles.lookup(), WeatherData.class);
+  private static final AggregateList.Factory<WeatherData> LIST_FACTORY =
+      AggregateList.factory(MethodHandles.lookup(), WeatherData.class);
 
   public static List<WeatherData> getWeatherData(LatLong latLong, LocalDate startDate, LocalDate endDate)
       throws IOException {
