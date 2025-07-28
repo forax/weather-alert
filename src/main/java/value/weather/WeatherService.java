@@ -6,11 +6,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import util.AggregateList;
+import util.AggregateGenerator;
 import util.TypeAwareListDeserializer;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
+import java.lang.invoke.MethodHandles;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -68,6 +69,9 @@ public final class WeatherService {
     Files.writeString(cachePath(uri), json);
   }
 
+  private static final AggregateGenerator.AggregateFactory<WeatherData> LIST_FACTORY =
+      AggregateGenerator.factory(MethodHandles.lookup(), WeatherData.class);
+
   public static List<WeatherData> getWeatherData(LatLong latLong, LocalDate startDate, LocalDate endDate)
       throws IOException {
 
@@ -84,16 +88,16 @@ public final class WeatherService {
 
     var response = OBJECT_READER.readValue(body, OpenMeteoResponse.class);
     var data = response.hourly();
-    if (data.temperatures.size() != data.windspeeds.size() || data.temperatures.size() != data.precipitations.size()) {
-      throw new IllegalStateException("temperature size != windspeed size or precipitation size != precipitation size");
-    }
+    //if (data.temperatures.size() != data.windspeeds.size() || data.temperatures.size() != data.precipitations.size()) {
+    //  throw new IllegalStateException("temperature size != windspeed size or precipitation size != precipitation size");
+    //}
     //return IntStream.range(0, data.precipitations.size())
     //    .mapToObj(i -> new WeatherData(
     //        data.temperatures.get(i),
     //        data.windspeeds.get(i),
     //        data.precipitations.get(i)))
     //    .toList();
-    return new AggregateList<>(List.of(data.temperatures, data.windspeeds, data.precipitations), WeatherData.class);
+    return LIST_FACTORY.create(data.temperatures, data.windspeeds, data.precipitations);
   }
 
   private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");

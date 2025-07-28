@@ -83,7 +83,7 @@ public class Float16Benchmark {
     }
   }
 
-  @Benchmark
+  //@Benchmark
   public float min32() {
     var min = temperature32s[0];
     for (var i = 1; i < temperature32s.length; i++) {
@@ -92,7 +92,7 @@ public class Float16Benchmark {
     return min.value();
   }
 
-  @Benchmark
+  //@Benchmark
   public float min16() {
     var min = temperature16s[0];
     for (var i = 1; i < temperature16s.length; i++) {
@@ -101,7 +101,7 @@ public class Float16Benchmark {
     return min.value();
   }
 
-  @Benchmark
+  //@Benchmark
   public float minMixed() {
     var min = temperature16s[0].to32();
     for (var i = 1; i < temperature16s.length; i++) {
