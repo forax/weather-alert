@@ -10,7 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-public class AggregateListTest {
+public final class AggregateListTest {
 
   @Test
   @DisplayName("Testing basic operations with TestRecord")
