@@ -194,7 +194,7 @@ public final class AggregateGenerator {
       throw new UnsupportedOperationException();
     }
 
-    public static boolean defaultEquals(AggregateList<?> list, Object o) {  // called by generated code
+    static boolean defaultEquals(AggregateList<?> list, Object o) {  // called by generated code
       if (!(o instanceof List<?> list2) || list.size() != list2.size()) {
         return false;
       }
@@ -210,7 +210,7 @@ public final class AggregateGenerator {
       return !(it1.hasNext() || it2.hasNext());
     }
 
-    public static int defaultHashCode(AggregateList<?> list) {  // called by generated code
+    static int defaultHashCode(AggregateList<?> list) {  // called by generated code
       var hashCode = 1;
       for(var i = 0; i < list.size(); i++) {
         var e = list.get(i);
@@ -219,7 +219,7 @@ public final class AggregateGenerator {
       return hashCode;
     }
 
-    public static String defaultToString(AggregateList<?> list) {  // called by generated code
+    static String defaultToString(AggregateList<?> list) {  // called by generated code
       return list.asList().toString();
     }
   }
