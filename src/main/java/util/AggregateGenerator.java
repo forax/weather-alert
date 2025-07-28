@@ -193,33 +193,35 @@ public final class AggregateGenerator {
     default void clear() {
       throw new UnsupportedOperationException();
     }
-  }
 
-  static boolean defaultEquals(AggregateList<?> list, Object o) {  // called by generated code
-    if (!(o instanceof List<?> list2) || list.size() != list2.size()) {
-      return false;
-    }
-    var it1 = list.iterator();
-    var it2 = list2.iterator();
-    while (it1.hasNext() && it2.hasNext()) {
-      var e1 = it1.next();
-      var e2 = it2.next();
-      if (!Objects.equals(e1, e2)) {
+    public static boolean defaultEquals(AggregateList<?> list, Object o) {  // called by generated code
+      if (!(o instanceof List<?> list2) || list.size() != list2.size()) {
         return false;
       }
+      var it1 = list.iterator();
+      var it2 = list2.iterator();
+      while (it1.hasNext() && it2.hasNext()) {
+        var e1 = it1.next();
+        var e2 = it2.next();
+        if (!Objects.equals(e1, e2)) {
+          return false;
+        }
+      }
+      return !(it1.hasNext() || it2.hasNext());
     }
-    return !(it1.hasNext() || it2.hasNext());
-  }
-  static int defaultHashCode(AggregateList<?> list) {  // called by generated code
-    var hashCode = 1;
-    for(var i = 0; i < list.size(); i++) {
-      var e = list.get(i);
-      hashCode = 31 * hashCode + Objects.hashCode(e);
+
+    public static int defaultHashCode(AggregateList<?> list) {  // called by generated code
+      var hashCode = 1;
+      for(var i = 0; i < list.size(); i++) {
+        var e = list.get(i);
+        hashCode = 31 * hashCode + Objects.hashCode(e);
+      }
+      return hashCode;
     }
-    return hashCode;
-  }
-  static String defaultToString(AggregateList<?> list) {  // called by generated code
-    return list.asList().toString();
+
+    public static String defaultToString(AggregateList<?> list) {  // called by generated code
+      return list.asList().toString();
+    }
   }
 
   /* model
@@ -266,7 +268,6 @@ public final class AggregateGenerator {
 
 
     private static final ClassDesc CD_AGGREGATE_LIST = ClassDesc.of(AggregateList.class.getName());
-    private static final ClassDesc CD_AGGREGATE_GENERATOR = ClassDesc.of(AggregateGenerator.class.getName());
 
     private static byte[] generateAggregateListImpl(Class<?> recordType, RecordComponent[] components) {;
       var thisClass = ClassDesc.of(recordType.getPackageName(), "AggregateListImpl");
@@ -467,8 +468,8 @@ public final class AggregateGenerator {
         mb.withCode(codeb -> {
           codeb.aload(0);  // this
           codeb.aload(1);  // obj parameter
-          codeb.invokestatic(CD_AGGREGATE_GENERATOR, "defaultEquals",
-              MethodTypeDesc.of(CD_boolean, CD_AGGREGATE_LIST, CD_Object));
+          codeb.invokestatic(CD_AGGREGATE_LIST, "defaultEquals",
+              MethodTypeDesc.of(CD_boolean, CD_AGGREGATE_LIST, CD_Object), true);
           codeb.ireturn();
         });
       });
@@ -478,8 +479,8 @@ public final class AggregateGenerator {
       cb.withMethod("hashCode", MethodTypeDesc.of(CD_int), ACC_PUBLIC, mb -> {
         mb.withCode(codeb -> {
           codeb.aload(0);  // this
-          codeb.invokestatic(CD_AGGREGATE_GENERATOR, "defaultHashCode",
-              MethodTypeDesc.of(CD_int, CD_AGGREGATE_LIST));
+          codeb.invokestatic(CD_AGGREGATE_LIST, "defaultHashCode",
+              MethodTypeDesc.of(CD_int, CD_AGGREGATE_LIST), true);
           codeb.ireturn();
         });
       });
@@ -489,8 +490,8 @@ public final class AggregateGenerator {
       cb.withMethod("toString", MethodTypeDesc.of(CD_String), ACC_PUBLIC, mb -> {
         mb.withCode(codeb -> {
           codeb.aload(0);  // this
-          codeb.invokestatic(CD_AGGREGATE_GENERATOR, "defaultToString",
-              MethodTypeDesc.of(CD_String, CD_AGGREGATE_LIST));
+          codeb.invokestatic(CD_AGGREGATE_LIST, "defaultToString",
+              MethodTypeDesc.of(CD_String, CD_AGGREGATE_LIST), true);
           codeb.areturn();
         });
       });
