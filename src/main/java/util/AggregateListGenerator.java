@@ -14,6 +14,7 @@ import java.lang.constant.MethodTypeDesc;
 import java.lang.reflect.RecordComponent;
 
 import static java.lang.classfile.ClassFile.*;
+import static java.lang.classfile.ClassFile.JAVA_25_VERSION;
 import static java.lang.constant.ConstantDescs.*;
 import static java.lang.invoke.MethodHandles.Lookup.ClassOption.NESTMATE;
 import static java.lang.invoke.MethodHandles.Lookup.ClassOption.STRONG;
@@ -72,6 +73,7 @@ final class AggregateListGenerator {
     var thisClass = ClassDesc.of(recordType.getPackageName(), "AggregateListImpl");
     return ClassFile.of().build(thisClass, cb -> {
       // Class modifiers and extends/implements
+      cb.withVersion(JAVA_25_VERSION, PREVIEW_MINOR_VERSION);
       cb.withFlags(ACC_PUBLIC | ACC_FINAL);
       cb.withSuperclass(CD_Object);
       cb.withInterfaceSymbols(CD_AGGREGATE_LIST);
@@ -103,7 +105,7 @@ final class AggregateListGenerator {
       mb.withCode(codeb -> {
         // Initialize fields
         for (int i = 0; i < components.length; i++) {
-          String fieldName = "list" + i;
+          var fieldName = "list" + i;
           codeb.aload(0);  // this
           codeb.aload(i + 1);  // parameter
           codeb.putfield(thisClass, fieldName, CD_List);
@@ -463,6 +465,7 @@ final class AggregateListGenerator {
     var factory = factory(MethodHandles.lookup(), tupleClass);
 
     var list = factory.create(List.of(42), List.of("foo"));
+    System.out.println("value class ? " + list.getClass().isValue());
     System.out.println(list);
   }
 }

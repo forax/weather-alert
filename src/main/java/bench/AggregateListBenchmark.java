@@ -10,7 +10,7 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 import util.AggregateList;
-import util.ValueList;
+import util.GenericValueList;
 
 import java.lang.invoke.MethodHandles;
 import java.util.AbstractList;
@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 @State(Scope.Benchmark)
-@Fork(value = 1, jvmArgs = {"--enable-preview"})
+@Fork(value = 1, jvmArgs = {"--enable-preview", "--add-exports=java.base/jdk.internal.value=ALL-UNNAMED", "--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED"})
 @Warmup(iterations = 5, time = 1)
 @Measurement(iterations = 5, time = 1)
 public class AggregateListBenchmark {
@@ -28,9 +28,9 @@ public class AggregateListBenchmark {
   private value record Tuple(int left, int right) {}
 
   private static final class SpecializedList extends AbstractList<Tuple> {
-    private final List<ValueList<Integer>> lists;
+    private final List<GenericValueList<Integer>> lists;
 
-    SpecializedList(List<ValueList<Integer>> lists) {
+    SpecializedList(List<GenericValueList<Integer>> lists) {
       this.lists = lists;
     }
 
@@ -45,8 +45,8 @@ public class AggregateListBenchmark {
     }
   }
 
-  private final ValueList<Integer> list0 = new ValueList<>(Integer.class, 1024);
-  private final ValueList<Integer> list1 = new ValueList<>(Integer.class, 1024);
+  private final GenericValueList<Integer> list0 = new GenericValueList<>(Integer.class, 1024);
+  private final GenericValueList<Integer> list1 = new GenericValueList<>(Integer.class, 1024);
   {
     for(var i = 0; i < 1024; i++) {
       list0.add(i);
@@ -60,7 +60,7 @@ public class AggregateListBenchmark {
       AggregateList.factory(MethodHandles.lookup(), Tuple.class);
   private final AggregateList<Tuple> aggregateList = FACTORY.create(list0, list1);
 
-  @Benchmark
+  //@Benchmark
   public int sumSpecializedList() {
     var sum = 0;
     for (var i = 0; i < specializedList.size(); i++) {
@@ -70,7 +70,7 @@ public class AggregateListBenchmark {
     return sum;
   }
 
-  @Benchmark
+  //@Benchmark
   public int sumAggregateList() {
     var sum = 0;
     for (var i = 0; i < aggregateList.size(); i++) {
