@@ -9,6 +9,8 @@ import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
+
+import util.AggregateGenericList;
 import util.AggregateList;
 import util.GenericValueList;
 
@@ -16,6 +18,11 @@ import java.lang.invoke.MethodHandles;
 import java.util.AbstractList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+// Benchmark                                       Mode  Cnt    Score   Error  Units
+// AggregateListBenchmark.sumAggregateGenericList  avgt    5  109,139 ± 1,189  ns/op
+// AggregateListBenchmark.sumAggregateList         avgt    5  112,068 ± 2,655  ns/op
+// AggregateListBenchmark.sumSpecializedList       avgt    5  112,199 ± 0,325  ns/op
 
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
@@ -58,9 +65,11 @@ public class AggregateListBenchmark {
 
   private static final AggregateList.Factory<Tuple> FACTORY =
       AggregateList.factory(MethodHandles.lookup(), Tuple.class);
+  private final AggregateGenericList<Tuple> aggregateGenericList = new AggregateGenericList<>(list0.size(),
+      i -> new Tuple(list0.get(i), list1.get(i)));
   private final AggregateList<Tuple> aggregateList = FACTORY.create(list0, list1);
 
-  //@Benchmark
+  @Benchmark
   public int sumSpecializedList() {
     var sum = 0;
     for (var i = 0; i < specializedList.size(); i++) {
@@ -70,7 +79,17 @@ public class AggregateListBenchmark {
     return sum;
   }
 
-  //@Benchmark
+  @Benchmark
+  public int sumAggregateGenericList() {
+    var sum = 0;
+    for (var i = 0; i < aggregateGenericList.size(); i++) {
+      var tuple = aggregateGenericList.get(i);
+      sum += tuple.left + tuple.right;
+    }
+    return sum;
+  }
+
+  @Benchmark
   public int sumAggregateList() {
     var sum = 0;
     for (var i = 0; i < aggregateList.size(); i++) {

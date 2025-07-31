@@ -17,16 +17,13 @@ import util.ValueList;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
-//Benchmark                                                         (size)  Mode  Cnt     Score     Error  Units
-//ListIterationBenchmark.sumArrayList                                  100  avgt    5    41,148 ±   0,351  ns/op
-//ListIterationBenchmark.sumArrayList                                 1000  avgt    5   336,467 ±   4,209  ns/op
-//ListIterationBenchmark.sumArrayList                                10000  avgt    5  4244,339 ±  17,953  ns/op
-//ListIterationBenchmark.sumNullRestrictedValueList                    100  avgt    5    16,852 ±   0,097  ns/op
-//ListIterationBenchmark.sumNullRestrictedValueList                   1000  avgt    5   272,608 ±   1,571  ns/op
-//ListIterationBenchmark.sumNullRestrictedValueList                  10000  avgt    5  2897,307 ±  13,594  ns/op
-//ListIterationBenchmark.sumValueList                                  100  avgt    5    25,605 ±   0,125  ns/op
-//ListIterationBenchmark.sumValueList                                 1000  avgt    5   300,475 ±   1,230  ns/op
-//ListIterationBenchmark.sumValueList                                10000  avgt    5  3160,731 ±   6,543  ns/op
+// Benchmark                                                 (size)  Mode  Cnt      Score    Error  Units
+// ListIterationBenchmark.sumArrayList                        10000  avgt    5   4199,513 ± 14,517  ns/op
+// ListIterationBenchmark.sumGenericValueList                 10000  avgt    5   3161,144 ± 10,539  ns/op
+// ListIterationBenchmark.sumNullRestrictedGenericValueList   10000  avgt    5   2895,744 ± 12,455  ns/op
+// ListIterationBenchmark.sumNullRestrictedValueList          10000  avgt    5   2895,486 ±  9,538  ns/op
+// ListIterationBenchmark.sumNullableValueList                10000  avgt    5  13325,575 ± 54,399  ns/op
+// ListIterationBenchmark.sumValueList                        10000  avgt    5   3138,913 ± 34,849  ns/op
 
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
@@ -61,7 +58,7 @@ public class ListIterationBenchmark {
     }
   }
 
-  @Benchmark
+  //@Benchmark
   public int sumArrayList() {
     var sum = 0;
     for (var i = 0; i < arrayList.size(); i++) {
@@ -71,7 +68,7 @@ public class ListIterationBenchmark {
     return sum;
   }
 
-  @Benchmark
+  //@Benchmark
   public int sumGenericValueList() {
     var sum = 0;
     for (var i = 0; i < genericValueList.size(); i++) {
@@ -81,7 +78,7 @@ public class ListIterationBenchmark {
     return sum;
   }
 
-  @Benchmark
+  //@Benchmark
   @Fork(value = 1, jvmArgs = {
       "--enable-preview",
       "--add-exports=java.base/jdk.internal.value=ALL-UNNAMED",
@@ -95,7 +92,7 @@ public class ListIterationBenchmark {
     return sum;
   }
 
-  @Benchmark
+  //@Benchmark
   public int sumValueList() {
     var sum = 0;
     for (var i = 0; i < valueList.size(); i++) {
@@ -105,7 +102,7 @@ public class ListIterationBenchmark {
     return sum;
   }
 
-  @Benchmark
+  //@Benchmark
   @Fork(value = 1, jvmArgs = {
       "--enable-preview",
       "--add-exports=java.base/jdk.internal.value=ALL-UNNAMED"})
@@ -118,7 +115,7 @@ public class ListIterationBenchmark {
     return sum;
   }
 
-  @Benchmark
+  //@Benchmark
   @Fork(value = 1, jvmArgs = {
       "--enable-preview",
       "--add-exports=java.base/jdk.internal.value=ALL-UNNAMED",

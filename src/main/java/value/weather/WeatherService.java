@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import jdk.internal.vm.annotation.NullRestricted;
+import util.AggregateGenericList;
 import util.AggregateList;
 import util.TypeAwareListDeserializer;
 import util.ValueList;
@@ -98,7 +99,12 @@ public final class WeatherService {
       throw new IllegalStateException("temperature size != windspeed size or precipitation size != precipitation size");
     }
     var start = System.nanoTime();
-    var weatherData = AGGREGATE_LIST_FACTORY.create(data.temperatures, data.windspeeds, data.precipitations);
+    var weatherData = new AggregateGenericList<>(data.temperatures.size(),
+        (i) -> new WeatherData(
+            data.temperatures.get(i),
+            data.windspeeds.get(i),
+            data.precipitations.get(i)));
+    //var weatherData = AGGREGATE_LIST_FACTORY.create(data.temperatures, data.windspeeds, data.precipitations);
     /*var weatherData = IntStream.range(0, data.precipitations.size())
         .mapToObj(i -> new WeatherData(
             data.temperatures.get(i),
