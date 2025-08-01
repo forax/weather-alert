@@ -69,7 +69,7 @@ public class AggregateListBenchmark {
       i -> new Tuple(list0.get(i), list1.get(i)));
   private final AggregateList<Tuple> aggregateList = FACTORY.create(list0, list1);
 
-  @Benchmark
+  //@Benchmark
   public int sumSpecializedList() {
     var sum = 0;
     for (var i = 0; i < specializedList.size(); i++) {
@@ -79,7 +79,7 @@ public class AggregateListBenchmark {
     return sum;
   }
 
-  @Benchmark
+  //@Benchmark
   public int sumAggregateGenericList() {
     var sum = 0;
     for (var i = 0; i < aggregateGenericList.size(); i++) {
@@ -89,7 +89,7 @@ public class AggregateListBenchmark {
     return sum;
   }
 
-  @Benchmark
+  //@Benchmark
   public int sumAggregateList() {
     var sum = 0;
     for (var i = 0; i < aggregateList.size(); i++) {

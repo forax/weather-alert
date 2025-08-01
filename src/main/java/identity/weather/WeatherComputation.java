@@ -15,7 +15,6 @@ public class WeatherComputation {
   }
 
   public static WeatherResult compute(List<WeatherData> weatherDataList) {
-    var start = System.nanoTime();
     var result = new WeatherResult(
         new Temperature(Float.MAX_VALUE),
         new Temperature(Float.MIN_VALUE),
@@ -24,8 +23,6 @@ public class WeatherComputation {
     for(var weatherData : weatherDataList) {
       result = result.compute(weatherData);
     }
-    var end = System.nanoTime();
-    System.out.println("Computation time: " + (end - start) + " ns");
     return result;
   }
 }

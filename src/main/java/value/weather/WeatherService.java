@@ -7,8 +7,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import jdk.internal.vm.annotation.NullRestricted;
-import util.AggregateGenericList;
 import util.AggregateList;
+import util.GenericValueList;
 import util.TypeAwareListDeserializer;
 import util.ValueList;
 
@@ -74,10 +74,10 @@ public final class WeatherService {
     Files.writeString(cachePath(uri), json);
   }
 
-  private static final AggregateList.Factory<WeatherData> AGGREGATE_LIST_FACTORY =
-      AggregateList.factory(MethodHandles.lookup(), WeatherData.class);
-  private static final ValueList.Factory<WeatherData> VALUE_LIST_FACTORY =
-      ValueList.factory(MethodHandles.lookup(), WeatherData.class);
+  //private static final AggregateList.Factory<WeatherData> AGGREGATE_LIST_FACTORY =
+  //    AggregateList.factory(MethodHandles.lookup(), WeatherData.class);
+  //private static final ValueList.Factory<WeatherData> VALUE_LIST_FACTORY =
+  //    ValueList.factory(MethodHandles.lookup(), WeatherData.class);
 
   public static List<WeatherData> getWeatherData(LatLong latLong, LocalDate startDate, LocalDate endDate)
       throws IOException {
@@ -98,24 +98,20 @@ public final class WeatherService {
     if (data.temperatures.size() != data.windspeeds.size() || data.temperatures.size() != data.precipitations.size()) {
       throw new IllegalStateException("temperature size != windspeed size or precipitation size != precipitation size");
     }
-    var start = System.nanoTime();
-    var weatherData = new AggregateGenericList<>(data.temperatures.size(),
-        (i) -> new WeatherData(
-            data.temperatures.get(i),
-            data.windspeeds.get(i),
-            data.precipitations.get(i)));
-    //var weatherData = AGGREGATE_LIST_FACTORY.create(data.temperatures, data.windspeeds, data.precipitations);
-    /*var weatherData = IntStream.range(0, data.precipitations.size())
+    //return new AggregateGenericList<>(data.temperatures.size(),
+    //    (i) -> new WeatherData(
+    //        data.temperatures.get(i),
+    //        data.windspeeds.get(i),
+    //        data.precipitations.get(i)));
+    //return AGGREGATE_LIST_FACTORY.create(data.temperatures, data.windspeeds, data.precipitations);
+    return IntStream.range(0, data.precipitations.size())
         .mapToObj(i -> new WeatherData(
             data.temperatures.get(i),
             data.windspeeds.get(i),
             data.precipitations.get(i)))
         //.toList();
-        .collect(Collectors.toCollection(() -> VALUE_LIST_FACTORY.create(data.temperatures.size())));
-    */
-    var end = System.nanoTime();
-    System.out.println("Parsing time: " + (end - start) + " ns");
-    return weatherData;
+        //.collect(Collectors.toCollection(() -> VALUE_LIST_FACTORY.create(data.temperatures.size())));
+        .collect(Collectors.toCollection(() -> new GenericValueList<>(WeatherData.class, data.temperatures.size())));
   }
 
   private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -136,8 +132,8 @@ public final class WeatherService {
 
   public value record LatLong(double latitude, double longitude) {}
 
-  public value record WeatherData(Temperature temperature, Windspeed windspeed, Precipitation precipitation) { }
-  //public value record WeatherData(@NullRestricted Temperature temperature, @NullRestricted Windspeed windspeed, @NullRestricted Precipitation precipitation) { }
+  //public value record WeatherData(Temperature temperature, Windspeed windspeed, Precipitation precipitation) { }
+  public value record WeatherData(@NullRestricted Temperature temperature, @NullRestricted Windspeed windspeed, @NullRestricted Precipitation precipitation) { }
 
   public value record Temperature(float value) {
     @JsonCreator

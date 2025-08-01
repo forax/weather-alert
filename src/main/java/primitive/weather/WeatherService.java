@@ -77,16 +77,12 @@ public final class WeatherService {
     if (data.temperatures.length != data.windspeeds.length || data.temperatures.length != data.precipitations.length) {
       throw new IllegalStateException("temperature size != windspeed size or precipitation size != precipitation size");
     }
-    var start = System.nanoTime();
-    var weatherData = IntStream.range(0, data.precipitations.length)
+    return IntStream.range(0, data.precipitations.length)
         .mapToObj(i -> new WeatherData(
             data.temperatures[i],
             data.windspeeds[i],
             data.precipitations[i]))
         .toList();
-    var end = System.nanoTime();
-    System.out.println("Parsing time: " + (end - start) + " ns");
-    return weatherData;
   }
 
   private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
