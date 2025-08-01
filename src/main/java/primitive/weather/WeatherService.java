@@ -58,33 +58,6 @@ public final class WeatherService {
     Files.writeString(cachePath(uri), json);
   }
 
-  public static List<WeatherData> getWeatherData(LatLong latLong, LocalDate startDate, LocalDate endDate)
-      throws IOException {
-
-    var uri = buildURI(latLong, startDate, endDate);
-    System.err.println(uri);
-
-    String body;
-    try {
-      body = readFromCache(uri);
-    } catch (IOException e) {
-      body = fetch(uri);
-      storeIntoCache(uri, body);
-    }
-
-    var response = OBJECT_READER.readValue(body, OpenMeteoResponse.class);
-    var data = response.hourly();
-    if (data.temperatures.length != data.windspeeds.length || data.temperatures.length != data.precipitations.length) {
-      throw new IllegalStateException("temperature size != windspeed size or precipitation size != precipitation size");
-    }
-    return IntStream.range(0, data.precipitations.length)
-        .mapToObj(i -> new WeatherData(
-            data.temperatures[i],
-            data.windspeeds[i],
-            data.precipitations[i]))
-        .toList();
-  }
-
   private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
   private static URI buildURI(LatLong latLong, LocalDate startDate, LocalDate endDate) {
@@ -101,12 +74,28 @@ public final class WeatherService {
     }
   }
 
+  public static HourlyData getHourlyData(LatLong latLong, LocalDate startDate, LocalDate endDate)
+      throws IOException{
+
+    var uri = buildURI(latLong, startDate, endDate);
+    System.err.println(uri);
+
+    String body;
+    try {
+      body = readFromCache(uri);
+    } catch (IOException e) {
+      body = fetch(uri);
+      storeIntoCache(uri, body);
+    }
+
+    var response = OBJECT_READER.readValue(body, OpenMeteoResponse.class);
+    return response.hourly();
+  }
+
   public record LatLong(double latitude, double longitude) {}
 
-  public record WeatherData(float temperature, float windspeed, float precipitation) { }
-
   @JsonIgnoreProperties(ignoreUnknown = true)
-  private record HourlyData(
+  public record HourlyData(
       @JsonProperty("temperature_2m") float[] temperatures,
       @JsonProperty("wind_speed_10m") float[] windspeeds,
       @JsonProperty("precipitation") float[] precipitations

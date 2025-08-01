@@ -14,7 +14,8 @@ class WeatherExample {
     var endDate = LocalDate.parse("2025-01-01");
     var startDate = endDate.minusYears(20);
 
-    var weatherData = WeatherService.getWeatherData(paris, startDate, endDate);
-    System.out.println(WeatherComputation.compute(weatherData));
+    var hourlyData = WeatherService.getHourlyData(paris, startDate, endDate);
+    var weatherData = WeatherComputation.toWeatherData(hourlyData);
+    System.out.println(WeatherComputation.computeWeatherData(weatherData));
   }
 }

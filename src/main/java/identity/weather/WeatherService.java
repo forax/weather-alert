@@ -59,33 +59,6 @@ public final class WeatherService {
     Files.writeString(cachePath(uri), json);
   }
 
-  public static List<WeatherData> getWeatherData(LatLong latLong, LocalDate startDate, LocalDate endDate)
-      throws IOException {
-
-    var uri = buildURI(latLong, startDate, endDate);
-    System.err.println(uri);
-
-    String body;
-    try {
-      body = readFromCache(uri);
-    } catch (IOException e) {
-      body = fetch(uri);
-      storeIntoCache(uri, body);
-    }
-
-    var response = OBJECT_READER.readValue(body, OpenMeteoResponse.class);
-    var data = response.hourly();
-    if (data.temperatures.size() != data.windspeeds.size() || data.temperatures.size() != data.precipitations.size()) {
-      throw new IllegalStateException("temperature size != windspeed size or precipitation size != precipitation size");
-    }
-    return  IntStream.range(0, data.precipitations.size())
-        .mapToObj(i -> new WeatherData(
-            data.temperatures.get(i),
-            data.windspeeds.get(i),
-            data.precipitations.get(i)))
-        .toList();
-  }
-
   private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
   private static URI buildURI(LatLong latLong, LocalDate startDate, LocalDate endDate) {
@@ -102,9 +75,25 @@ public final class WeatherService {
     }
   }
 
-  public record LatLong(double latitude, double longitude) {}
+  public static HourlyData getHourlyData(LatLong latLong, LocalDate startDate, LocalDate endDate)
+      throws IOException{
 
-  public record WeatherData(Temperature temperature, Windspeed windspeed, Precipitation precipitation) { }
+    var uri = buildURI(latLong, startDate, endDate);
+    System.err.println(uri);
+
+    String body;
+    try {
+      body = readFromCache(uri);
+    } catch (IOException e) {
+      body = fetch(uri);
+      storeIntoCache(uri, body);
+    }
+
+    var response = OBJECT_READER.readValue(body, OpenMeteoResponse.class);
+    return response.hourly();
+  }
+
+  public record LatLong(double latitude, double longitude) {}
 
   public record Temperature(float value) {
     @JsonCreator
@@ -173,7 +162,7 @@ public final class WeatherService {
   }
 
   @JsonIgnoreProperties(ignoreUnknown = true)
-  private record HourlyData(
+  public record HourlyData(
       @JsonProperty("temperature_2m") List<Temperature> temperatures,
       @JsonProperty("wind_speed_10m") List<Windspeed> windspeeds,
       @JsonProperty("precipitation") List<Precipitation> precipitations
