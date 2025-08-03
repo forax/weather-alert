@@ -17,7 +17,7 @@ public final class GenericFlatList<E> extends AbstractList<E> {
       valueClassAvailable = true;
     } catch (IllegalAccessError _) {
       valueClassAvailable = false;
-      System.err.println("WARNING: ValueClass class is not available !");
+      System.err.println("WARNING: flat arrays are not available !");
     }
     VALUE_CLASS_AVAILABLE = valueClassAvailable;
 
