@@ -24,6 +24,7 @@ public final class GenericFlatListTest {
   public void testConstructorWithValueClass() {
     var list = new GenericFlatList<>(TestValue.class);
 
+    assertTrue(list.isFlat());
     assertEquals(0, list.size());
     assertTrue(list.isEmpty());
   }
@@ -382,6 +383,8 @@ public final class GenericFlatListTest {
     value record EmptyValue() {}
     
     var emptyValueList = new GenericFlatList<>(EmptyValue.class);
+    assertTrue(emptyValueList.isFlat());
+
     emptyValueList.add(new EmptyValue());
     
     assertEquals(1, emptyValueList.size());
@@ -396,6 +399,8 @@ public final class GenericFlatListTest {
     value record CompositeValue(String name, int id, boolean flag) {}
 
     var compositeList = new GenericFlatList<>(CompositeValue.class);
+    assertTrue(compositeList.isFlat());
+
     compositeList.add(new CompositeValue("test", 42, true));
 
     assertEquals(1, compositeList.size());
@@ -409,6 +414,8 @@ public final class GenericFlatListTest {
     value record TwoByteValue(ByteValue v1, ByteValue v2) {}
 
     var twoByteList = new GenericFlatList<>(TwoByteValue.class);
+    assertTrue(twoByteList.isFlat());
+
     twoByteList.add(new TwoByteValue(new ByteValue((byte) 1), new ByteValue((byte) 2)));
 
     assertEquals(1, twoByteList.size());
