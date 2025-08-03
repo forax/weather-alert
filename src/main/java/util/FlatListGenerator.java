@@ -116,6 +116,7 @@ final class FlatListGenerator {
           generateSetMethod(classBuilder, thisClass, elementDesc);
           generateResizeMethod(classBuilder, thisClass, elementDesc);
           generateAddMethod(classBuilder, thisClass, elementDesc);
+          generateIsFlatMethod(classBuilder, thisClass, elementDesc);
 
           generateEqualsMethod(classBuilder);
           generateHashCodeMethod(classBuilder);
@@ -298,6 +299,22 @@ final class FlatListGenerator {
         }));
   }
 
+  private static void generateIsFlatMethod(ClassBuilder classBuilder, ClassDesc thisClass, ClassDesc elementDesc) {
+    // Method: public boolean isFlat()
+    classBuilder.withMethod("isFlat",
+        MethodTypeDesc.of(CD_boolean),
+        ACC_PUBLIC,
+        methodBuilder -> methodBuilder.withCode(codeBuilder -> {
+          var elementArrayDesc = elementDesc.arrayType();
+          codeBuilder
+              .aload(0)  // load this
+              .getfield(thisClass, "array", elementArrayDesc)
+              .invokestatic(CD_FLAT_LIST, "isFlatArray",
+              MethodTypeDesc.of(CD_boolean, CD_Object.arrayType()), true)
+              .ireturn();
+        }));
+  }
+
   private static void generateEqualsMethod(ClassBuilder classBuilder) {
     classBuilder.withMethod("equals", MethodTypeDesc.of(CD_boolean, CD_Object), ACC_PUBLIC, mb -> {
       mb.withCode(codeBuilder -> {
@@ -406,7 +423,14 @@ final class FlatListGenerator {
     return Arrays.copyOf(array, newCapacity);
   }
 
-  private static final class Cache {
+  static boolean isFlatArray(Object[] array) {
+    if (VALUE_CLASS_AVAILABLE) {
+      return ValueClass.isFlatArray(array);
+    }
+    return false;
+  }
+
+    private static final class Cache {
     private final MethodHandles.Lookup hiddenLookup;
     private MethodHandle defaultConstructor;
     private MethodHandle primaryConstructor;

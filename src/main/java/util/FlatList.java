@@ -15,6 +15,7 @@ public interface FlatList<E> extends List<E> {
     E get(int index);
     E set(int index, E element);
     boolean add(E e);
+    boolean isFlat();
 
     @Override
     default int indexOf(Object o) {
@@ -228,6 +229,10 @@ public interface FlatList<E> extends List<E> {
     static <E> E[] arrayCopy(E[] array, int newCapacity) {  // called by generated code
       return FlatListGenerator.arrayCopy(array, newCapacity);
     }
+
+   static boolean isFlatArray(Object[] array) {  // called by generated code
+     return FlatListGenerator.isFlatArray(array);
+   }
 
     static <E> FlatList<E> create(Class<? extends E> elementType) {
       Objects.requireNonNull(elementType);
