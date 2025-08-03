@@ -442,13 +442,13 @@ final class FlatListGenerator {
     var classBytes = generateValueListImpl(lookup.lookupClass(), elementType);
 
     // DEBUG
-    ClassFile.of().parse(classBytes).methods().forEach(method -> {
+    /*ClassFile.of().parse(classBytes).methods().forEach(method -> {
       System.err.println("Method: " + method.methodName().stringValue());
       method.findAttribute(Attributes.code()).ifPresent(code -> {
         code.elementList()
             .forEach(element -> System.err.println("  " + element));
       });
-    });
+    });*/
 
     MethodHandles.Lookup hiddenLookup;
     try {
