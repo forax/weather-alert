@@ -69,8 +69,8 @@ final class AggregateListGenerator {
 
   private static final ClassDesc CD_AGGREGATE_LIST = ClassDesc.of(AggregateList.class.getName());
 
-  private static byte[] generateAggregateListImpl(Class<?> recordType, RecordComponent[] components) {;
-    var thisClass = ClassDesc.of(recordType.getPackageName(), "AggregateListImpl");
+  private static byte[] generateAggregateListImpl(Class<?> lookupClass, Class<?> recordType, RecordComponent[] components) {;
+    var thisClass = ClassDesc.of(lookupClass.getPackageName(), "AggregateListImpl");
     return ClassFile.of().build(thisClass, cb -> {
       // Class modifiers and extends/implements
       cb.withVersion(JAVA_25_VERSION, PREVIEW_MINOR_VERSION);
@@ -426,7 +426,7 @@ final class AggregateListGenerator {
 
   private static MethodHandle createMH(MethodHandles.Lookup lookup, Class<?> recordType) {
     var components = recordType.getRecordComponents();
-    var classBytes = generateAggregateListImpl(recordType, components);
+    var classBytes = generateAggregateListImpl(lookup.lookupClass(), recordType, components);
 
     // DEBUG
     /*ClassFile.of().parse(classBytes).methods().forEach(method -> {
