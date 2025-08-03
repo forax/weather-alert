@@ -217,8 +217,12 @@ public interface FlatList<E> extends List<E> {
       return list.asList().toString();
     }
 
-    static <E> E[] newArray(Class<E> elementType, int capacity) {  // called by generated code
-      return FlatListGenerator.newArray(elementType, capacity);
+    static <E> E defaultValue(MethodHandles.Lookup lookup, String name, Class<E> elementType) {  // called by generated code
+      return FlatListGenerator.defaultValue(elementType);
+    }
+
+    static <E> E[] newArray(Class<E> elementType, int capacity, E defaultValue) {  // called by generated code
+      return FlatListGenerator.newArray(elementType, capacity, defaultValue);
     }
 
     static <E> E[] arrayCopy(E[] array, int newCapacity) {  // called by generated code

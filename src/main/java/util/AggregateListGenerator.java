@@ -430,10 +430,10 @@ final class AggregateListGenerator {
 
     // DEBUG
     /*ClassFile.of().parse(classBytes).methods().forEach(method -> {
-      System.out.println("Method: " + method.methodName().stringValue());
+      System.err.println("Method: " + method.methodName().stringValue());
       method.findAttribute(Attributes.code()).ifPresent(code -> {
         code.elementList()
-            .forEach(element -> System.out.println("  " + element));
+            .forEach(element -> System.err.println("  " + element));
       });
     });*/
 

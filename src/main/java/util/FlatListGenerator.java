@@ -21,6 +21,7 @@ import static java.lang.classfile.ClassFile.ACC_PUBLIC;
 import static java.lang.classfile.ClassFile.ACC_STRICT;
 import static java.lang.classfile.ClassFile.JAVA_25_VERSION;
 import static java.lang.constant.ConstantDescs.CD_Class;
+import static java.lang.constant.ConstantDescs.CD_MethodHandles_Lookup;
 import static java.lang.constant.ConstantDescs.CD_Object;
 import static java.lang.constant.ConstantDescs.CD_String;
 import static java.lang.constant.ConstantDescs.CD_boolean;
@@ -84,11 +85,17 @@ final class FlatListGenerator {
     }
   }*/
 
-  private static final ClassDesc CD_VALUE_LIST = ClassDesc.of(FlatList.class.getName());
+  private static final ClassDesc CD_FLAT_LIST = ClassDesc.of(FlatList.class.getName());
+  private static final DirectMethodHandleDesc DEFAULT_VALUE_BSM =
+      MethodHandleDesc.ofMethod(
+          DirectMethodHandleDesc.Kind.INTERFACE_STATIC,
+          CD_FLAT_LIST,
+          "defaultValue",
+          MethodTypeDesc.of(CD_Object, CD_MethodHandles_Lookup, CD_String, CD_Class));
 
   public static byte[] generateValueListImpl(Class<?> lookupClass, Class<?> elementType) {
     var elementDesc = ClassDesc.of(elementType.getName());
-    var thisClass = ClassDesc.of(lookupClass.getPackageName(), "ValueListImpl");
+    var thisClass = ClassDesc.of(lookupClass.getPackageName(), "FlatListImpl");
     return ClassFile.of()
         .build(thisClass,
         classBuilder -> {
@@ -97,7 +104,7 @@ final class FlatListGenerator {
               .withVersion(JAVA_25_VERSION, 0)
               .withFlags(ACC_PUBLIC | ACC_FINAL | ACC_IDENTITY)
               .withSuperclass(CD_Object)
-              .withInterfaceSymbols(CD_VALUE_LIST);
+              .withInterfaceSymbols(CD_FLAT_LIST);
 
           // Fields
           generateFields(classBuilder, elementDesc);
@@ -138,8 +145,10 @@ final class FlatListGenerator {
               .aload(0)  // load this
               .ldc(elementDesc)  // load elementType
               .iload(1)  // load capacity
-              .invokestatic(CD_VALUE_LIST, "newArray",
-                  MethodTypeDesc.of(CD_Object.arrayType(), CD_Class, CD_int), true)
+              .ldc(DynamicConstantDesc.ofNamed(  // load default value
+                  DEFAULT_VALUE_BSM, "_", elementDesc))
+              .invokestatic(CD_FLAT_LIST, "newArray",
+                  MethodTypeDesc.of(CD_Object.arrayType(), CD_Class, CD_int, CD_Object), true)
               .checkcast(elementArrayDesc)
               .putfield(thisClass, "array", elementArrayDesc)
               .aload(0)  // load this
@@ -243,7 +252,7 @@ final class FlatListGenerator {
               .arraylength()
               .iconst_1()
               .ishl()  // << 1 (double the size)
-              .invokestatic(CD_VALUE_LIST, "arrayCopy",
+              .invokestatic(CD_FLAT_LIST, "arrayCopy",
                   MethodTypeDesc.of(CD_Object.arrayType(), CD_Object.arrayType(), CD_int), true)
               .checkcast(elementArrayDesc)
               .astore(1)  // store the new array in a local variable
@@ -295,8 +304,8 @@ final class FlatListGenerator {
         codeBuilder
             .aload(0)  // this
             .aload(1)  // obj parameter
-            .invokestatic(CD_VALUE_LIST, "defaultEquals",
-                MethodTypeDesc.of(CD_boolean, CD_VALUE_LIST, CD_Object), true)
+            .invokestatic(CD_FLAT_LIST, "defaultEquals",
+                MethodTypeDesc.of(CD_boolean, CD_FLAT_LIST, CD_Object), true)
             .ireturn();
       });
     });
@@ -307,8 +316,8 @@ final class FlatListGenerator {
       mb.withCode(codeBuilder -> {
         codeBuilder
             .aload(0)  // this
-            .invokestatic(CD_VALUE_LIST, "defaultHashCode",
-                MethodTypeDesc.of(CD_int, CD_VALUE_LIST), true)
+            .invokestatic(CD_FLAT_LIST, "defaultHashCode",
+                MethodTypeDesc.of(CD_int, CD_FLAT_LIST), true)
             .ireturn();
       });
     });
@@ -319,8 +328,8 @@ final class FlatListGenerator {
       mb.withCode(codeBuilder -> {
         codeBuilder
             .aload(0)  // this
-            .invokestatic(CD_VALUE_LIST, "defaultToString",
-                MethodTypeDesc.of(CD_String, CD_VALUE_LIST), true)
+            .invokestatic(CD_FLAT_LIST, "defaultToString",
+                MethodTypeDesc.of(CD_String, CD_FLAT_LIST), true)
             .areturn();
       });
     });
@@ -361,10 +370,18 @@ final class FlatListGenerator {
   }
 
   @SuppressWarnings("unchecked")
-  static <E> E[] newArray(Class<E> elementType, int capacity) {
+  static <E> E defaultValue(Class<E> elementType) {
+    if (DEFAULT_VALUE == null) {
+      return null;
+    }
+    return (E) DEFAULT_VALUE.get(elementType);
+  }
+
+  @SuppressWarnings("unchecked")
+  static <E> E[] newArray(Class<E> elementType, int capacity, E defaultValue) {
     if (VALUE_CLASS_AVAILABLE) {
       if (DEFAULT_VALUE != null) {
-        return (E[]) ValueClass.newNullRestrictedAtomicArray(elementType, capacity, DEFAULT_VALUE.get(elementType));
+        return (E[]) ValueClass.newNullRestrictedAtomicArray(elementType, capacity, defaultValue);
       }
       return (E[]) ValueClass.newNullableAtomicArray(elementType, capacity);
     }
@@ -423,6 +440,16 @@ final class FlatListGenerator {
 
   private static Cache createCache(MethodHandles.Lookup lookup, Class<?> elementType) {
     var classBytes = generateValueListImpl(lookup.lookupClass(), elementType);
+
+    // DEBUG
+    ClassFile.of().parse(classBytes).methods().forEach(method -> {
+      System.err.println("Method: " + method.methodName().stringValue());
+      method.findAttribute(Attributes.code()).ifPresent(code -> {
+        code.elementList()
+            .forEach(element -> System.err.println("  " + element));
+      });
+    });
+
     MethodHandles.Lookup hiddenLookup;
     try {
       hiddenLookup = lookup.defineHiddenClass(classBytes, true, NESTMATE, STRONG);
