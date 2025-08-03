@@ -14,11 +14,19 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.concurrent.TimeUnit;
 
-// Benchmark                                                      Mode  Cnt     Score    Error  Units
-// HourlyDataComputationBenchmark.identityComputation             avgt    5  1978,858 ± 12,276  us/op
-// HourlyDataComputationBenchmark.primitiveComputation            avgt    5   154,205 ±  1,536  us/op
-// HourlyDataComputationBenchmark.valueComputation                avgt    5   801,330 ± 15,198  us/op
-// HourlyDataComputationBenchmark.valueNullRestrictedComputation  avgt    5   181,246 ±  0,296  us/op
+// Benchmark - Specialized                                        Mode  Cnt     Score    Error  Units
+// HourlyDataComputationBenchmark.identityComputation             avgt    5  1978,127 ± 14,217  us/op
+// HourlyDataComputationBenchmark.primitiveComputation            avgt    5   151,743 ±  0,980  us/op
+// HourlyDataComputationBenchmark.valueComputation                avgt    5   778,932 ± 18,041  us/op
+// HourlyDataComputationBenchmark.valueNullRestrictedComputation  avgt    5   177,009 ±  0,973  us/op
+// HourlyDataComputationBenchmark.valueNullableComputation        avgt    5   490,299 ±  0,611  us/op
+
+// Benchmark - Generic                                            Mode  Cnt      Score     Error  Units
+// HourlyDataComputationBenchmark.identityComputation             avgt    5   1985,475 ±  20,515  us/op
+// HourlyDataComputationBenchmark.primitiveComputation            avgt    5    151,956 ±   1,624  us/op
+// HourlyDataComputationBenchmark.valueComputation                avgt    5    685,881 ±  14,699  us/op
+// HourlyDataComputationBenchmark.valueNullRestrictedComputation  avgt    5  31843,872 ± 402,694  us/op
+// HourlyDataComputationBenchmark.valueNullableComputation        avgt    5  31005,588 ± 447,575  us/op
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 @State(Scope.Benchmark)
@@ -75,6 +83,12 @@ public class HourlyDataComputationBenchmark {
 
   //@Benchmark
   public value.weather.WeatherComputation.WeatherResult valueComputation() {
+    return value.weather.WeatherComputation.computeHourlyData(valueHourlyData);
+  }
+
+  //@Benchmark
+  @Fork(value = 1, jvmArgs = {"--enable-preview", "--add-exports=java.base/jdk.internal.value=ALL-UNNAMED"})
+  public value.weather.WeatherComputation.WeatherResult valueNullableComputation() {
     return value.weather.WeatherComputation.computeHourlyData(valueHourlyData);
   }
 

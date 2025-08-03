@@ -44,8 +44,8 @@ public class WeatherComputation {
 
   //private static final AggregateList.Factory<WeatherData> AGGREGATE_LIST_FACTORY =
   //    AggregateList.factory(MethodHandles.lookup(), WeatherData.class);
-  //private static final ValueList.Factory<WeatherData> VALUE_LIST_FACTORY =
-  //    ValueList.factory(MethodHandles.lookup(), WeatherData.class);
+  private static final ValueList.Factory<WeatherData> VALUE_LIST_FACTORY =
+      ValueList.factory(MethodHandles.lookup(), WeatherData.class);
 
   //public value record WeatherData(Temperature temperature, Windspeed windspeed, Precipitation precipitation) { }
   public value record WeatherData(@NullRestricted Temperature temperature, @NullRestricted Windspeed windspeed, @NullRestricted Precipitation precipitation) { }
@@ -63,7 +63,8 @@ public class WeatherComputation {
             windspeeds.get(i),
             precipitations.get(i)))
         //.toList();
-        .collect(Collectors.toCollection(() -> new GenericValueList<>(WeatherData.class, precipitations.size())));
+        //.collect(Collectors.toCollection(() -> new GenericValueList<>(WeatherData.class, precipitations.size())));
+        .collect(Collectors.toCollection(() -> VALUE_LIST_FACTORY.create(precipitations.size())));
   }
 
   public static WeatherResult computeWeatherData(List<WeatherData> weatherDataList) {

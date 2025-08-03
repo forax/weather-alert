@@ -1,6 +1,8 @@
 package bench;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -14,12 +16,17 @@ import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
+import util.AggregateList;
 
-// Benchmark                                                       Mode  Cnt     Score   Error  Units
-// WeatherDataComputationBenchmark.identityComputation             avgt    5  2130,118 ± 9,767  us/op
-// WeatherDataComputationBenchmark.primitiveComputation            avgt    5   155,823 ± 0,595  us/op
-// WeatherDataComputationBenchmark.valueComputation                avgt    5   155,767 ± 0,399  us/op
-// WeatherDataComputationBenchmark.valueNullRestrictedComputation  avgt    5   182,016 ± 2,376  us/o
+// Benchmark                                                                Mode  Cnt     Score    Error  Units
+// WeatherDataComputationBenchmark.aggregateValueComputation                avgt    5  1950,894 ± 58,790  us/op
+// WeatherDataComputationBenchmark.aggregateValueNullRestrictedComputation  avgt    5   176,937 ±  0,341  us/op
+// WeatherDataComputationBenchmark.aggregateValueNullableComputation        avgt    5   478,109 ±  2,462  us/op
+// WeatherDataComputationBenchmark.identityComputation                      avgt    5  2143,667 ± 30,305  us/op
+// WeatherDataComputationBenchmark.primitiveComputation                     avgt    5   155,506 ±  0,268  us/op
+// WeatherDataComputationBenchmark.valueComputation                         avgt    5   155,449 ±  0,445  us/op
+// WeatherDataComputationBenchmark.valueNullRestrictedComputation           avgt    5   156,090 ±  0,821  us/op
+// WeatherDataComputationBenchmark.valueNullableComputation                 avgt    5   156,043 ±  0,501  us/op
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 @State(Scope.Benchmark)
@@ -70,6 +77,21 @@ public class WeatherDataComputationBenchmark {
     valueWeatherDataList = value.weather.WeatherComputation.toWeatherData(hourlyData);
   }
 
+  private List<value.weather.WeatherComputation.WeatherData> aggregateValueWeatherDataList;
+  {
+    var paris = new value.weather.WeatherService.LatLong(48.864716, 2.349014);
+    value.weather.WeatherService.HourlyData hourlyData;
+    try {
+      hourlyData = value.weather.WeatherService.getHourlyData(paris, startDate, endDate);
+    } catch (IOException e) {
+      throw new AssertionError(e);
+    }
+    aggregateValueWeatherDataList =
+        AggregateList.factory(MethodHandles.lookup(), value.weather.WeatherComputation.WeatherData.class)
+            .create(hourlyData.temperatures(), hourlyData.windspeeds(), hourlyData.precipitations());
+  }
+
+
   @Benchmark
   public identity.weather.WeatherComputation.WeatherResult identityComputation() {
     return identity.weather.WeatherComputation.computeWeatherData(identityWeatherDataList);
@@ -86,8 +108,32 @@ public class WeatherDataComputationBenchmark {
   }
 
   @Benchmark
+  @Fork(value = 1, jvmArgs = {"--enable-preview", "--add-exports=java.base/jdk.internal.value=ALL-UNNAMED"})
+  public value.weather.WeatherComputation.WeatherResult valueNullableComputation() {
+    return value.weather.WeatherComputation.computeWeatherData(valueWeatherDataList);
+  }
+
+  @Benchmark
   @Fork(value = 1, jvmArgs = {"--enable-preview", "--add-exports=java.base/jdk.internal.value=ALL-UNNAMED", "--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED"})
   public value.weather.WeatherComputation.WeatherResult valueNullRestrictedComputation() {
     return value.weather.WeatherComputation.computeWeatherData(valueWeatherDataList);
+  }
+
+
+  @Benchmark
+  public value.weather.WeatherComputation.WeatherResult aggregateValueComputation() {
+    return value.weather.WeatherComputation.computeWeatherData(aggregateValueWeatherDataList);
+  }
+
+  @Benchmark
+  @Fork(value = 1, jvmArgs = {"--enable-preview", "--add-exports=java.base/jdk.internal.value=ALL-UNNAMED"})
+  public value.weather.WeatherComputation.WeatherResult aggregateValueNullableComputation() {
+    return value.weather.WeatherComputation.computeWeatherData(aggregateValueWeatherDataList);
+  }
+
+  @Benchmark
+  @Fork(value = 1, jvmArgs = {"--enable-preview", "--add-exports=java.base/jdk.internal.value=ALL-UNNAMED", "--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED"})
+  public value.weather.WeatherComputation.WeatherResult aggregateValueNullRestrictedComputation() {
+    return value.weather.WeatherComputation.computeWeatherData(aggregateValueWeatherDataList);
   }
 }
