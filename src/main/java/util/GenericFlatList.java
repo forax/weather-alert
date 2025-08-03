@@ -50,9 +50,11 @@ public final class GenericFlatList<E> extends AbstractList<E> {
     if (VALUE_CLASS_AVAILABLE) {
       if (DEFAULT_VALUE != null) {
         values = (E[]) ValueClass.newNullRestrictedAtomicArray(elementType, capacity, DEFAULT_VALUE.get(elementType));
+        assert ValueClass.isFlatArray(values);
         return;
       }
       values = (E[]) ValueClass.newNullableAtomicArray(elementType, capacity);
+      assert ValueClass.isFlatArray(values);
       return;
     }
     values = (E[]) Array.newInstance(elementType, capacity);

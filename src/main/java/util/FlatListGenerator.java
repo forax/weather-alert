@@ -381,9 +381,13 @@ final class FlatListGenerator {
   static <E> E[] newArray(Class<E> elementType, int capacity, E defaultValue) {
     if (VALUE_CLASS_AVAILABLE) {
       if (DEFAULT_VALUE != null) {
-        return (E[]) ValueClass.newNullRestrictedAtomicArray(elementType, capacity, defaultValue);
+        var array = (E[]) ValueClass.newNullRestrictedAtomicArray(elementType, capacity, defaultValue);
+        assert ValueClass.isFlatArray(array);
+        return array;
       }
-      return (E[]) ValueClass.newNullableAtomicArray(elementType, capacity);
+      var array = (E[]) ValueClass.newNullableAtomicArray(elementType, capacity);
+      assert ValueClass.isFlatArray(array);
+      return array;
     }
     return (E[]) Array.newInstance(elementType, capacity);
   }
