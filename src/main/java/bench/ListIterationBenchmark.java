@@ -82,7 +82,7 @@ public class ListIterationBenchmark {
       "--enable-preview",
       "--add-exports=java.base/jdk.internal.value=ALL-UNNAMED",
       "--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED"})
-  public int sumNullRestrictedGenericFlatist() {
+  public int sumNullRestrictedGenericFlatList() {
     var sum = 0;
     for (var i = 0; i < genericFlatList.size(); i++) {
       var value = genericFlatList.get(i);

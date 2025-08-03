@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 // Benchmark                                       Mode  Cnt    Score   Error  Units
-// AggregateListBenchmark.sumAggregateGenericList  avgt    5  109,139 ± 1,189  ns/op
+// AggregateListBenchmark.sumGenericAggregateList  avgt    5  109,139 ± 1,189  ns/op
 // AggregateListBenchmark.sumAggregateList         avgt    5  112,068 ± 2,655  ns/op
 // AggregateListBenchmark.sumSpecializedList       avgt    5  112,199 ± 0,325  ns/op
 
@@ -79,7 +79,7 @@ public class AggregateListBenchmark {
   }
 
   //@Benchmark
-  public int sumAggregateGenericList() {
+  public int sumGenericAggregateList() {
     var sum = 0;
     for (var i = 0; i < genericAggregateList.size(); i++) {
       var tuple = genericAggregateList.get(i);
