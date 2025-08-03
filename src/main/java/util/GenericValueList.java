@@ -8,13 +8,21 @@ import jdk.internal.value.ValueClass;
 import jdk.internal.misc.Unsafe;
 
 public final class GenericValueList<E> extends AbstractList<E> {
-  private static final boolean NULL_RESTRICTED_ARRAY_AVAILABLE;
+  private static final boolean VALUE_CLASS_AVAILABLE;
   private static final ClassValue<Object> DEFAULT_VALUE;
   static {
-    boolean nullRestrictedArrayAvailable;
-    ClassValue<Object> defaultValue;
+    boolean valueClassAvailable;
     try {
       var _ = ValueClass.class;  // check that ValueClass is visible
+      valueClassAvailable = true;
+    } catch (IllegalAccessError _) {
+      valueClassAvailable = false;
+      System.err.println("WARNING: ValueClass class is not available !");
+    }
+    VALUE_CLASS_AVAILABLE = valueClassAvailable;
+
+    ClassValue<Object> defaultValue;
+    try {
       defaultValue = new ClassValue<>() {
         private static final Unsafe UNSAFE = Unsafe.getUnsafe();  // check that Unsafe is visible
 
@@ -27,36 +35,31 @@ public final class GenericValueList<E> extends AbstractList<E> {
           }
         }
       };
-      nullRestrictedArrayAvailable = true;
     } catch (IllegalAccessError _) {
       defaultValue = null;
-      nullRestrictedArrayAvailable = false;
-      System.err.println("WARNING: null restricted array not available !");
+      System.err.println("WARNING: default value is not available !");
     }
     DEFAULT_VALUE = defaultValue;
-    NULL_RESTRICTED_ARRAY_AVAILABLE = nullRestrictedArrayAvailable;
   }
 
   private E[] values;
   private int size;
 
   @SuppressWarnings("unchecked")
-  public GenericValueList(Class<? extends E> valueClass, int initialCapacity) {
-    if (!valueClass.isValue()) {
-      throw new IllegalArgumentException("must be a value class");
-    }
-    if (NULL_RESTRICTED_ARRAY_AVAILABLE) {
-      var defaultValue = DEFAULT_VALUE.get(valueClass);
-      this.values = (E[]) ValueClass.newNullRestrictedAtomicArray(valueClass, initialCapacity, defaultValue);
+  public GenericValueList(Class<? extends E> elementType, int capacity) {
+    if (VALUE_CLASS_AVAILABLE) {
+      if (DEFAULT_VALUE != null) {
+        values = (E[]) ValueClass.newNullRestrictedAtomicArray(elementType, capacity, DEFAULT_VALUE.get(elementType));
+        return;
+      }
+      values = (E[]) ValueClass.newNullableAtomicArray(elementType, capacity);
       return;
     }
-    this.values = (E[]) Array.newInstance(valueClass, initialCapacity);
-    //this.values = (E[]) ValueClass.newNullableAtomicArray(valueClass, initialCapacity);
-    //System.err.println("Value array " + valueClass.getName() + " " + ValueClass.isFlatArray(this.values));
+    values = (E[]) Array.newInstance(elementType, capacity);
   }
 
   public GenericValueList(Class<? extends E> valueClass) {
-    this(valueClass, 0);
+    this(valueClass, 16);
   }
 
   @Override
@@ -70,37 +73,39 @@ public final class GenericValueList<E> extends AbstractList<E> {
     return values[index];
   }
 
+  @SuppressWarnings("unchecked")
   private void resize() {
-    var newSize = Math.max(16, values.length << 1);
-    if (NULL_RESTRICTED_ARRAY_AVAILABLE && ValueClass.isNullRestrictedArray(values)) {
-      var valueClass = values.getClass().getComponentType();
-      var defaultValue = DEFAULT_VALUE.get(valueClass);
-      @SuppressWarnings("unchecked")
-      var newArray = (E[]) ValueClass.newNullRestrictedAtomicArray(valueClass, newSize, defaultValue);
-      System.arraycopy(values, 0, newArray, 0, size);
-      values = newArray;
-    } else {
-      // Arrays.copyOf only supports nullable arrays
-      values = Arrays.copyOf(values, newSize);
+    var newCapacity = Math.max(16, values.length << 1);
+    if (VALUE_CLASS_AVAILABLE) {
+      if (DEFAULT_VALUE != null) {
+        var componentType = values.getClass().getComponentType();
+        var newArray = (E[]) ValueClass.newNullRestrictedAtomicArray(componentType, newCapacity, DEFAULT_VALUE.get(componentType));
+        System.arraycopy(values, 0, newArray, 0, values.length);
+        values = newArray;
+        return;
+      }
+      values = (E[]) ValueClass.copyOfSpecialArray(values, 0, newCapacity);
+      return;
     }
+    values = Arrays.copyOf(values, newCapacity);
   }
 
-  private void expandToNullableArray() {
+  /*private void expandToNullableArray() {
     var valueClass = values.getClass().getComponentType();
     @SuppressWarnings("unchecked")
     var newArray = (E[]) ValueClass.newNullableAtomicArray(valueClass, values.length);
     System.arraycopy(values, 0, newArray, 0, size);
     values = newArray;
-  }
+  }*/
 
   @Override
   public boolean add(E element) {
     if (size == values.length) {
       resize();
     }
-    if (NULL_RESTRICTED_ARRAY_AVAILABLE && element == null && ValueClass.isNullRestrictedArray(values)) {
+    /*if (NULL_RESTRICTED_ARRAY_AVAILABLE && element == null && ValueClass.isNullRestrictedArray(values)) {
       expandToNullableArray();
-    }
+    }*/
     values[size++] = element;
     return true;
   }
