@@ -1,6 +1,5 @@
 package bench;
 
-import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Measurement;
@@ -10,9 +9,9 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 
-import util.AggregateGenericList;
+import util.GenericAggregateList;
 import util.AggregateList;
-import util.GenericValueList;
+import util.GenericFlatList;
 
 import java.lang.invoke.MethodHandles;
 import java.util.AbstractList;
@@ -35,9 +34,9 @@ public class AggregateListBenchmark {
   private value record Tuple(int left, int right) {}
 
   private static final class SpecializedList extends AbstractList<Tuple> {
-    private final List<GenericValueList<Integer>> lists;
+    private final List<GenericFlatList<Integer>> lists;
 
-    SpecializedList(List<GenericValueList<Integer>> lists) {
+    SpecializedList(List<GenericFlatList<Integer>> lists) {
       this.lists = lists;
     }
 
@@ -52,8 +51,8 @@ public class AggregateListBenchmark {
     }
   }
 
-  private final GenericValueList<Integer> list0 = new GenericValueList<>(Integer.class, 1024);
-  private final GenericValueList<Integer> list1 = new GenericValueList<>(Integer.class, 1024);
+  private final GenericFlatList<Integer> list0 = new GenericFlatList<>(Integer.class, 1024);
+  private final GenericFlatList<Integer> list1 = new GenericFlatList<>(Integer.class, 1024);
   {
     for(var i = 0; i < 1024; i++) {
       list0.add(i);
@@ -65,7 +64,7 @@ public class AggregateListBenchmark {
 
   private static final AggregateList.Factory<Tuple> FACTORY =
       AggregateList.factory(MethodHandles.lookup(), Tuple.class);
-  private final AggregateGenericList<Tuple> aggregateGenericList = new AggregateGenericList<>(list0.size(),
+  private final GenericAggregateList<Tuple> genericAggregateList = new GenericAggregateList<>(list0.size(),
       i -> new Tuple(list0.get(i), list1.get(i)));
   private final AggregateList<Tuple> aggregateList = FACTORY.create(list0, list1);
 
@@ -82,8 +81,8 @@ public class AggregateListBenchmark {
   //@Benchmark
   public int sumAggregateGenericList() {
     var sum = 0;
-    for (var i = 0; i < aggregateGenericList.size(); i++) {
-      var tuple = aggregateGenericList.get(i);
+    for (var i = 0; i < genericAggregateList.size(); i++) {
+      var tuple = genericAggregateList.get(i);
       sum += tuple.left + tuple.right;
     }
     return sum;

@@ -1,17 +1,18 @@
 package util;
 
 import java.util.AbstractList;
-import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.function.IntFunction;
 
-public final class AggregateGenericList<E> extends AbstractList<E> {
+public final class GenericAggregateList<E> extends AbstractList<E> {
   private final int size;
   private final IntFunction<? extends E> mapper;
 
-  public AggregateGenericList(int size, IntFunction<? extends E> mapper) {
+  public GenericAggregateList(int size, IntFunction<? extends E> mapper) {
     this.size = size;
+    if (size < 0) {
+      throw new IllegalArgumentException("Size cannot be negative");
+    }
     this.mapper = Objects.requireNonNull(mapper);
   }
 

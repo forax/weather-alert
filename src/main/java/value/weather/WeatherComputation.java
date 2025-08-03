@@ -6,8 +6,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import jdk.internal.vm.annotation.NullRestricted;
-import util.GenericValueList;
-import util.ValueList;
+import util.FlatList;
 import value.weather.WeatherService.*;
 
 public class WeatherComputation {
@@ -44,8 +43,8 @@ public class WeatherComputation {
 
   //private static final AggregateList.Factory<WeatherData> AGGREGATE_LIST_FACTORY =
   //    AggregateList.factory(MethodHandles.lookup(), WeatherData.class);
-  private static final ValueList.Factory<WeatherData> VALUE_LIST_FACTORY =
-      ValueList.factory(MethodHandles.lookup(), WeatherData.class);
+  private static final FlatList.Factory<WeatherData> VALUE_LIST_FACTORY =
+      FlatList.factory(MethodHandles.lookup(), WeatherData.class);
 
   //public value record WeatherData(Temperature temperature, Windspeed windspeed, Precipitation precipitation) { }
   public value record WeatherData(@NullRestricted Temperature temperature, @NullRestricted Windspeed windspeed, @NullRestricted Precipitation precipitation) { }

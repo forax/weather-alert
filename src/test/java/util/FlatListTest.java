@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.NoSuchElementException;
 
-public final class ValueListTest {
+public final class FlatListTest {
 
   // Test value record for testing purposes
   private value record TestValue(String data) {}
@@ -20,7 +20,7 @@ public final class ValueListTest {
   @Test
   @DisplayName("Should create empty ValueList with value class")
   public void testConstructorWithValueClass() {
-    var list = ValueList.create(TestValue.class);
+    var list = FlatList.create(TestValue.class);
 
     assertEquals(0, list.size());
     assertTrue(list.isEmpty());
@@ -30,20 +30,20 @@ public final class ValueListTest {
   @DisplayName("Should throw IllegalArgumentException for non-value class")
   public void testConstructorWithNonValueClass() {
     assertThrows(IllegalArgumentException.class,
-        () -> new GenericValueList<RegularClass>(RegularClass.class));
+        () -> new GenericFlatList<RegularClass>(RegularClass.class));
   }
 
   @Test
   @DisplayName("Should throw NullPointerException for null class")
   public void testConstructorWithNullClass() {
     assertThrows(NullPointerException.class,
-        () -> ValueList.create(null));
+        () -> FlatList.create(null));
   }
 
   @Test
   @DisplayName("Should add single element and increase size")
   public void testAddSingleElement() {
-    var list = ValueList.create(TestValue.class);
+    var list = FlatList.create(TestValue.class);
     var element = new TestValue("test1");
 
     var result = list.add(element);
@@ -57,7 +57,7 @@ public final class ValueListTest {
   @Test
   @DisplayName("Should add multiple elements sequentially")
   public void testAddMultipleElements() {
-    var list = ValueList.create(TestValue.class);
+    var list = FlatList.create(TestValue.class);
     var element1 = new TestValue("test1");
     var element2 = new TestValue("test2");
     var element3 = new TestValue("test3");
@@ -76,7 +76,7 @@ public final class ValueListTest {
   @Disabled
   @DisplayName("Should handle adding null elements")
   public void testAddNullElement() {
-    var list = ValueList.create(TestValue.class);
+    var list = FlatList.create(TestValue.class);
 
     var result = list.add(null);
 
@@ -88,7 +88,7 @@ public final class ValueListTest {
   @Test
   @DisplayName("Should expand capacity when needed")
   public void testCapacityExpansion() {
-    var list = ValueList.create(TestValue.class);
+    var list = FlatList.create(TestValue.class);
 
     // Add more than initial capacity to trigger expansion
     for (int i = 0; i < 20; i++) {
@@ -104,7 +104,7 @@ public final class ValueListTest {
   @Test
   @DisplayName("Should get element at valid index")
   public void testGetValidIndex() {
-    var list = ValueList.create(TestValue.class);
+    var list = FlatList.create(TestValue.class);
     var element = new TestValue("test");
     list.add(element);
 
@@ -116,7 +116,7 @@ public final class ValueListTest {
   @Test
   @DisplayName("Should throw IndexOutOfBoundsException for negative index")
   public void testGetNegativeIndex() {
-    var list = ValueList.create(TestValue.class);
+    var list = FlatList.create(TestValue.class);
     list.add(new TestValue("test"));
 
     assertThrows(IndexOutOfBoundsException.class, () -> list.get(-1));
@@ -125,7 +125,7 @@ public final class ValueListTest {
   @Test
   @DisplayName("Should throw IndexOutOfBoundsException for index equal to size")
   public void testGetIndexEqualToSize() {
-    var list = ValueList.create(TestValue.class);
+    var list = FlatList.create(TestValue.class);
     list.add(new TestValue("test"));
 
     assertThrows(IndexOutOfBoundsException.class, () -> list.get(1));
@@ -134,7 +134,7 @@ public final class ValueListTest {
   @Test
   @DisplayName("Should throw IndexOutOfBoundsException for index greater than size")
   public void testGetIndexGreaterThanSize() {
-    var list = ValueList.create(TestValue.class);
+    var list = FlatList.create(TestValue.class);
     list.add(new TestValue("test"));
 
     assertThrows(IndexOutOfBoundsException.class, () -> list.get(5));
@@ -143,7 +143,7 @@ public final class ValueListTest {
   @Test
   @DisplayName("Should throw IndexOutOfBoundsException when accessing empty list")
   public void testGetFromEmptyList() {
-    var list = ValueList.create(TestValue.class);
+    var list = FlatList.create(TestValue.class);
 
     assertThrows(IndexOutOfBoundsException.class, () -> list.get(0));
   }
@@ -151,7 +151,7 @@ public final class ValueListTest {
   @Test
   @DisplayName("Should return correct size after multiple operations")
   public void testSizeConsistency() {
-    var list = ValueList.create(TestValue.class);
+    var list = FlatList.create(TestValue.class);
 
     assertEquals(0, list.size());
 
@@ -168,7 +168,7 @@ public final class ValueListTest {
   @Test
   @DisplayName("Should handle list with 1 element correctly")
   public void testListSizeOne() {
-    var list = ValueList.create(TestValue.class);
+    var list = FlatList.create(TestValue.class);
 
     list.add(new TestValue("item0"));
 
@@ -179,7 +179,7 @@ public final class ValueListTest {
   @Test
   @DisplayName("Should handle list with 5 elements correctly")
   public void testListSizeFive() {
-    var list = ValueList.create(TestValue.class);
+    var list = FlatList.create(TestValue.class);
 
     for (int i = 0; i < 5; i++) {
       list.add(new TestValue("item" + i));
@@ -195,7 +195,7 @@ public final class ValueListTest {
   @Test
   @DisplayName("Should handle list with 16 elements correctly")
   public void testListSizeSixteen() {
-    var list = ValueList.create(TestValue.class);
+    var list = FlatList.create(TestValue.class);
 
     for (int i = 0; i < 16; i++) {
       list.add(new TestValue("item" + i));
@@ -211,7 +211,7 @@ public final class ValueListTest {
   @Test
   @DisplayName("Should handle list with 17 elements correctly")
   public void testListSizeSeventeen() {
-    var list = ValueList.create(TestValue.class);
+    var list = FlatList.create(TestValue.class);
 
     for (int i = 0; i < 17; i++) {
       list.add(new TestValue("item" + i));
@@ -227,7 +227,7 @@ public final class ValueListTest {
   @Test
   @DisplayName("Should handle list with 32 elements correctly")
   public void testListSizeThirtyTwo() {
-    var list = ValueList.create(TestValue.class);
+    var list = FlatList.create(TestValue.class);
 
     for (int i = 0; i < 32; i++) {
       list.add(new TestValue("item" + i));
@@ -243,7 +243,7 @@ public final class ValueListTest {
   @Test
   @DisplayName("Should handle list with 100 elements correctly")
   public void testListSizeOneHundred() {
-    var list = ValueList.create(TestValue.class);
+    var list = FlatList.create(TestValue.class);
 
     for (int i = 0; i < 100; i++) {
       list.add(new TestValue("item" + i));
@@ -259,7 +259,7 @@ public final class ValueListTest {
   @Test
   @DisplayName("Should maintain order of added elements")
   public void testElementOrder() {
-    var list = ValueList.create(TestValue.class);
+    var list = FlatList.create(TestValue.class);
     var elements = new TestValue[] {
         new TestValue("first"),
         new TestValue("second"),
@@ -279,7 +279,7 @@ public final class ValueListTest {
   @Test
   @DisplayName("Should work with inherited List methods")
   public void testInheritedListMethods() {
-    var list = ValueList.create(TestValue.class);
+    var list = FlatList.create(TestValue.class);
     var element1 = new TestValue("test1");
     var element2 = new TestValue("test2");
 
@@ -300,7 +300,7 @@ public final class ValueListTest {
   @Test
   @DisplayName("Should handle edge case of exactly 16 elements")
   public void testExactly16Elements() {
-    var list = ValueList.create(TestValue.class);
+    var list = FlatList.create(TestValue.class);
 
     // Add exactly 16 elements (initial expansion threshold)
     for (int i = 0; i < 16; i++) {
@@ -322,7 +322,7 @@ public final class ValueListTest {
   @Test
   @DisplayName("Should support iterator from AbstractList")
   public void testIterator() {
-    var list = ValueList.create(TestValue.class);
+    var list = FlatList.create(TestValue.class);
     var element1 = new TestValue("test1");
     var element2 = new TestValue("test2");
 
@@ -342,7 +342,7 @@ public final class ValueListTest {
   @Test
   @DisplayName("Should support enhanced for loop")
   public void testEnhancedForLoop() {
-    var list = ValueList.create(TestValue.class);
+    var list = FlatList.create(TestValue.class);
     var expectedData = new String[]{"first", "second", "third"};
 
     for (var data : expectedData) {
@@ -360,7 +360,7 @@ public final class ValueListTest {
   @Test
   @DisplayName("Should handle large number of elements efficiently")
   public void testLargeScaleOperations() {
-    var list = ValueList.create(TestValue.class);
+    var list = FlatList.create(TestValue.class);
     
     for (int i = 0; i < 1_000_000; i++) {
         list.add(new TestValue("element" + i));
@@ -379,7 +379,7 @@ public final class ValueListTest {
   public void testEmptyValueClass() {
     value record EmptyValue() {}
     
-    var emptyValueList = ValueList.create(EmptyValue.class);
+    var emptyValueList = FlatList.create(EmptyValue.class);
     emptyValueList.add(new EmptyValue());
     
     assertEquals(1, emptyValueList.size());
@@ -391,7 +391,7 @@ public final class ValueListTest {
   public void testSeveralFieldsValueClass() {
     value record CompositeValue(String name, int id, boolean flag) {}
 
-    var compositeList = ValueList.create(CompositeValue.class);
+    var compositeList = FlatList.create(CompositeValue.class);
     compositeList.add(new CompositeValue("test", 42, true));
 
     assertEquals(1, compositeList.size());
@@ -404,7 +404,7 @@ public final class ValueListTest {
     value record ByteValue(byte val1) {}
     value record TwoByteValue(ByteValue v1, ByteValue v2) {}
 
-    var twoByteList = ValueList.create(TwoByteValue.class);
+    var twoByteList = FlatList.create(TwoByteValue.class);
     twoByteList.add(new TwoByteValue(new ByteValue((byte) 1), new ByteValue((byte) 2)));
 
     assertEquals(1, twoByteList.size());

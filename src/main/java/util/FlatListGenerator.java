@@ -29,7 +29,7 @@ import static java.lang.constant.ConstantDescs.CD_void;
 import static java.lang.invoke.MethodHandles.Lookup.ClassOption.NESTMATE;
 import static java.lang.invoke.MethodHandles.Lookup.ClassOption.STRONG;
 
-final class ValueListGenerator {
+final class FlatListGenerator {
   /*
   record Point(int x, int y) {}
 
@@ -84,7 +84,7 @@ final class ValueListGenerator {
     }
   }*/
 
-  private static final ClassDesc CD_VALUE_LIST = ClassDesc.of(ValueList.class.getName());
+  private static final ClassDesc CD_VALUE_LIST = ClassDesc.of(FlatList.class.getName());
 
   public static byte[] generateValueListImpl(Class<?> lookupClass, Class<?> elementType) {
     var elementDesc = ClassDesc.of(elementType.getName());
@@ -417,7 +417,7 @@ final class ValueListGenerator {
       } catch (IllegalAccessException e) {
         throw (IllegalAccessError) new IllegalAccessError().initCause(e);
       }
-      return constructor.asType(constructor.type().changeReturnType(ValueList.class));
+      return constructor.asType(constructor.type().changeReturnType(FlatList.class));
     }
   }
 
@@ -452,11 +452,11 @@ final class ValueListGenerator {
   };
 
   @SuppressWarnings("unchecked")
-  static <E> ValueList<E> createValueList(Class<? extends E> elementType) {
+  static <E> FlatList<E> createValueList(Class<? extends E> elementType) {
     var cache = VALUE_LIST_CACHE.get(elementType);
     var constructor = cache.defaultConstructor();
     try {
-      return (ValueList<E>) constructor.invokeExact();
+      return (FlatList<E>) constructor.invokeExact();
     } catch (RuntimeException | Error e) {
       throw e;
     } catch (Throwable e) {
@@ -465,11 +465,11 @@ final class ValueListGenerator {
   }
 
   @SuppressWarnings("unchecked")
-  static <E> ValueList<E> createValueList(Class<? extends E> elementType, int capacity) {
+  static <E> FlatList<E> createValueList(Class<? extends E> elementType, int capacity) {
     var cache = VALUE_LIST_CACHE.get(elementType);
     var constructor = cache.primaryConstructor();
     try {
-      return (ValueList<E>) constructor.invokeExact(capacity);
+      return (FlatList<E>) constructor.invokeExact(capacity);
     } catch (RuntimeException | Error e) {
       throw e;
     } catch (Throwable e) {
@@ -479,13 +479,13 @@ final class ValueListGenerator {
 
 
 
-  static <E> ValueList.Factory<E> factory(MethodHandles.Lookup lookup, Class<E> elementType) {
-    record FactoryImpl<E>(MethodHandle defaultConstructor, MethodHandle primaryConstructor) implements ValueList.Factory<E> {
+  static <E> FlatList.Factory<E> factory(MethodHandles.Lookup lookup, Class<E> elementType) {
+    record FactoryImpl<E>(MethodHandle defaultConstructor, MethodHandle primaryConstructor) implements FlatList.Factory<E> {
       @Override
       @SuppressWarnings("unchecked")
-      public ValueList<E> create() {
+      public FlatList<E> create() {
         try {
-          return (ValueList<E>) defaultConstructor.invokeExact();
+          return (FlatList<E>) defaultConstructor.invokeExact();
         } catch (RuntimeException | Error e) {
           throw e;
         } catch (Throwable e) {
@@ -495,9 +495,9 @@ final class ValueListGenerator {
 
       @Override
       @SuppressWarnings("unchecked")
-      public ValueList<E> create(int capacity) {
+      public FlatList<E> create(int capacity) {
         try {
-          return (ValueList<E>) primaryConstructor.invokeExact(capacity);
+          return (FlatList<E>) primaryConstructor.invokeExact(capacity);
         } catch (RuntimeException | Error e) {
           throw e;
         } catch (Throwable e) {
@@ -518,10 +518,10 @@ final class ValueListGenerator {
 
     var hiddenLookup = lookup.defineHiddenClass(classBytes, true, NESTMATE, STRONG);
     var constructor = hiddenLookup.findConstructor(hiddenLookup.lookupClass(), MethodType.methodType(void.class));
-    var mh = constructor.asType(constructor.type().changeReturnType(ValueList.class));
+    var mh = constructor.asType(constructor.type().changeReturnType(FlatList.class));
 
     @SuppressWarnings("unchecked")
-    List<String> list = (ValueList<String>) mh.invokeExact();
+    List<String> list = (FlatList<String>) mh.invokeExact();
 
     list.add("Hello");
     list.add("World");

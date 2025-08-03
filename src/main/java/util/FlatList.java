@@ -1,9 +1,7 @@
 package util;
 
 import java.lang.invoke.MethodHandles;
-import java.lang.reflect.Array;
 import java.util.AbstractList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -12,7 +10,7 @@ import java.util.ListIterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
-public interface ValueList<E> extends List<E> {
+public interface FlatList<E> extends List<E> {
     int size();
     E get(int index);
     E set(int index, E element);
@@ -66,12 +64,12 @@ public interface ValueList<E> extends List<E> {
       return new AbstractList<>() {
         @Override
         public int size() {
-          return ValueList.this.size();
+          return FlatList.this.size();
         }
 
         @Override
         public E get(int index) {
-          return ValueList.this.get(index);
+          return FlatList.this.get(index);
         }
       };
     }
@@ -187,7 +185,7 @@ public interface ValueList<E> extends List<E> {
       throw new UnsupportedOperationException();
     }
 
-    static boolean defaultEquals(ValueList<?> list, Object o) { // called by generated code
+    static boolean defaultEquals(FlatList<?> list, Object o) { // called by generated code
       Objects.requireNonNull(list);
       if (!(o instanceof List<?> list2) || list.size() != list2.size()) {
         return false;
@@ -204,7 +202,7 @@ public interface ValueList<E> extends List<E> {
       return !(it1.hasNext() || it2.hasNext());
     }
 
-    static int defaultHashCode(ValueList<?> list) { // called by generated code
+    static int defaultHashCode(FlatList<?> list) { // called by generated code
       Objects.requireNonNull(list);
       var hashCode = 1;
       for (var i = 0; i < list.size(); i++) {
@@ -214,37 +212,37 @@ public interface ValueList<E> extends List<E> {
       return hashCode;
     }
 
-    static String defaultToString(ValueList<?> list) { // called by generated code
+    static String defaultToString(FlatList<?> list) { // called by generated code
       Objects.requireNonNull(list);
       return list.asList().toString();
     }
 
     static <E> E[] newArray(Class<E> elementType, int capacity) {  // called by generated code
-      return ValueListGenerator.newArray(elementType, capacity);
+      return FlatListGenerator.newArray(elementType, capacity);
     }
 
     static <E> E[] arrayCopy(E[] array, int newCapacity) {  // called by generated code
-      return ValueListGenerator.arrayCopy(array, newCapacity);
+      return FlatListGenerator.arrayCopy(array, newCapacity);
     }
 
-    static <E> ValueList<E> create(Class<? extends E> elementType) {
+    static <E> FlatList<E> create(Class<? extends E> elementType) {
       Objects.requireNonNull(elementType);
-      return ValueListGenerator.createValueList(elementType);
+      return FlatListGenerator.createValueList(elementType);
     }
 
-    static <E> ValueList<E> create(Class<? extends E> elementType, int capacity) {
+    static <E> FlatList<E> create(Class<? extends E> elementType, int capacity) {
       Objects.requireNonNull(elementType);
-      return ValueListGenerator.createValueList(elementType, capacity);
+      return FlatListGenerator.createValueList(elementType, capacity);
     }
 
     interface Factory<E> {
-      ValueList<E> create();
-      ValueList<E> create(int capacity);
+      FlatList<E> create();
+      FlatList<E> create(int capacity);
     }
 
     static <E> Factory<E> factory(MethodHandles.Lookup lookup, Class<E> elementType) {
       Objects.requireNonNull(lookup);
       Objects.requireNonNull(elementType);
-      return ValueListGenerator.factory(lookup, elementType);
+      return FlatListGenerator.factory(lookup, elementType);
     }
   }

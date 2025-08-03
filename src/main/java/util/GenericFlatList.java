@@ -7,7 +7,7 @@ import java.util.Objects;
 import jdk.internal.value.ValueClass;
 import jdk.internal.misc.Unsafe;
 
-public final class GenericValueList<E> extends AbstractList<E> {
+public final class GenericFlatList<E> extends AbstractList<E> {
   private static final boolean VALUE_CLASS_AVAILABLE;
   private static final ClassValue<Object> DEFAULT_VALUE;
   static {
@@ -46,7 +46,7 @@ public final class GenericValueList<E> extends AbstractList<E> {
   private int size;
 
   @SuppressWarnings("unchecked")
-  public GenericValueList(Class<? extends E> elementType, int capacity) {
+  public GenericFlatList(Class<? extends E> elementType, int capacity) {
     if (VALUE_CLASS_AVAILABLE) {
       if (DEFAULT_VALUE != null) {
         values = (E[]) ValueClass.newNullRestrictedAtomicArray(elementType, capacity, DEFAULT_VALUE.get(elementType));
@@ -58,7 +58,7 @@ public final class GenericValueList<E> extends AbstractList<E> {
     values = (E[]) Array.newInstance(elementType, capacity);
   }
 
-  public GenericValueList(Class<? extends E> valueClass) {
+  public GenericFlatList(Class<? extends E> valueClass) {
     this(valueClass, 16);
   }
 

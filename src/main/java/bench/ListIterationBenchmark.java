@@ -1,6 +1,5 @@
 package bench;
 
-import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Measurement;
@@ -11,19 +10,19 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
-import util.GenericValueList;
-import util.ValueList;
+import util.GenericFlatList;
+import util.FlatList;
 
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
-// Benchmark                                                 (size)  Mode  Cnt      Score    Error  Units
-// ListIterationBenchmark.sumArrayList                        10000  avgt    5   4199,513 ± 14,517  ns/op
-// ListIterationBenchmark.sumGenericValueList                 10000  avgt    5   3161,144 ± 10,539  ns/op
-// ListIterationBenchmark.sumNullRestrictedGenericValueList   10000  avgt    5   2895,744 ± 12,455  ns/op
-// ListIterationBenchmark.sumNullRestrictedValueList          10000  avgt    5   2895,486 ±  9,538  ns/op
-// ListIterationBenchmark.sumNullableValueList                10000  avgt    5  13325,575 ± 54,399  ns/op
-// ListIterationBenchmark.sumValueList                        10000  avgt    5   3138,913 ± 34,849  ns/op
+// Benchmark                                                (size)  Mode  Cnt      Score    Error  Units
+// ListIterationBenchmark.sumArrayList                       10000  avgt    5   4199,513 ± 14,517  ns/op
+// ListIterationBenchmark.sumGenericFlatList                 10000  avgt    5   3161,144 ± 10,539  ns/op
+// ListIterationBenchmark.sumNullRestrictedGenericFlatList   10000  avgt    5   2895,744 ± 12,455  ns/op
+// ListIterationBenchmark.sumNullRestrictedFlatList          10000  avgt    5   2895,486 ±  9,538  ns/op
+// ListIterationBenchmark.sumNullableFlatList                10000  avgt    5  13325,575 ± 54,399  ns/op
+// ListIterationBenchmark.sumVFlatList                       10000  avgt    5   3138,913 ± 34,849  ns/op
 
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
@@ -37,8 +36,8 @@ public class ListIterationBenchmark {
   private int size;
 
   private ArrayList<TestValue> arrayList;
-  private GenericValueList<TestValue> genericValueList;
-  private ValueList<TestValue> valueList;
+  private GenericFlatList<TestValue> genericFlatList;
+  private FlatList<TestValue> flatList;
 
   // Define a simple value class for testing
   value record TestValue(int v) {}
@@ -47,14 +46,14 @@ public class ListIterationBenchmark {
   public void setup() {
     // Initialize both lists with the same data
     arrayList = new ArrayList<>(size);
-    genericValueList = new GenericValueList<>(TestValue.class, size);
-    valueList = ValueList.create(TestValue.class, size);
+    genericFlatList = new GenericFlatList<>(TestValue.class, size);
+    flatList = FlatList.create(TestValue.class, size);
 
     for (var i = 0; i < size; i++) {
       var value = new TestValue(i);
       arrayList.add(value);
-      genericValueList.add(value);
-      valueList.add(value);
+      genericFlatList.add(value);
+      flatList.add(value);
     }
   }
 
@@ -69,10 +68,10 @@ public class ListIterationBenchmark {
   }
 
   //@Benchmark
-  public int sumGenericValueList() {
+  public int sumGenericFlatList() {
     var sum = 0;
-    for (var i = 0; i < genericValueList.size(); i++) {
-      var value = genericValueList.get(i);
+    for (var i = 0; i < genericFlatList.size(); i++) {
+      var value = genericFlatList.get(i);
       sum += value.v;
     }
     return sum;
@@ -83,20 +82,20 @@ public class ListIterationBenchmark {
       "--enable-preview",
       "--add-exports=java.base/jdk.internal.value=ALL-UNNAMED",
       "--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED"})
-  public int sumNullRestrictedGenericValueList() {
+  public int sumNullRestrictedGenericFlatist() {
     var sum = 0;
-    for (var i = 0; i < genericValueList.size(); i++) {
-      var value = genericValueList.get(i);
+    for (var i = 0; i < genericFlatList.size(); i++) {
+      var value = genericFlatList.get(i);
       sum += value.v;
     }
     return sum;
   }
 
   //@Benchmark
-  public int sumValueList() {
+  public int sumFlatList() {
     var sum = 0;
-    for (var i = 0; i < valueList.size(); i++) {
-      var value = valueList.get(i);
+    for (var i = 0; i < flatList.size(); i++) {
+      var value = flatList.get(i);
       sum += value.v;
     }
     return sum;
@@ -106,10 +105,10 @@ public class ListIterationBenchmark {
   @Fork(value = 1, jvmArgs = {
       "--enable-preview",
       "--add-exports=java.base/jdk.internal.value=ALL-UNNAMED"})
-  public int sumNullableValueList() {
+  public int sumNullableFlatList() {
     var sum = 0;
-    for (var i = 0; i < valueList.size(); i++) {
-      var value = valueList.get(i);
+    for (var i = 0; i < flatList.size(); i++) {
+      var value = flatList.get(i);
       sum += value.v;
     }
     return sum;
@@ -120,10 +119,10 @@ public class ListIterationBenchmark {
       "--enable-preview",
       "--add-exports=java.base/jdk.internal.value=ALL-UNNAMED",
       "--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED"})
-  public int sumNullRestrictedValueList() {
+  public int sumNullRestrictedFlatList() {
     var sum = 0;
-    for (var i = 0; i < valueList.size(); i++) {
-      var value = valueList.get(i);
+    for (var i = 0; i < flatList.size(); i++) {
+      var value = flatList.get(i);
       sum += value.v;
     }
     return sum;
