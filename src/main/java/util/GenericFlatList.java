@@ -111,4 +111,11 @@ public final class GenericFlatList<E> extends AbstractList<E> {
     values[size++] = element;
     return true;
   }
+
+  public boolean isFlat() {
+    if (VALUE_CLASS_AVAILABLE) {
+      return ValueClass.isFlatArray(values);
+    }
+    return false;
+  }
 }
