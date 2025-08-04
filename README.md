@@ -16,3 +16,10 @@ There are 3 versions:
    - [value WeatherExample](src/main/java/value/weather/WeatherExample.java)
    - [value WeatherService](src/main/java/value/weather/WeatherService.java)
    - [value WeatherComputation](src/main/java/value/weather/WeatherComputation.java)
+
+
+## IntelliJ
+
+Recent versions of IntelliJ have partial support for value types.
+In File > Project Structure, select the "Language Level" to "Experimental Features"
+and for the Module "weather-alert" select either "Experimental Features" or "Project default".
