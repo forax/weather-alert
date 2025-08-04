@@ -1,5 +1,7 @@
 package bench;
 
+import jdk.internal.value.ValueClass;
+import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Measurement;
@@ -48,12 +50,24 @@ public class ListIterationBenchmark {
     arrayList = new ArrayList<>(size);
     genericFlatList = new GenericFlatList<>(TestValue.class, size);
     flatList = FlatList.create(TestValue.class, size);
+    checkFlatIfAvailable(flatList);
 
     for (var i = 0; i < size; i++) {
       var value = new TestValue(i);
       arrayList.add(value);
       genericFlatList.add(value);
       flatList.add(value);
+    }
+  }
+
+  private static void checkFlatIfAvailable(FlatList<?> flatList) {
+    try {
+      var _ = ValueClass.class;
+    } catch(IllegalAccessError _) {
+      return;  // okay !
+    }
+    if (!flatList.isFlat()) {
+      throw new AssertionError("list array is not a flat");
     }
   }
 

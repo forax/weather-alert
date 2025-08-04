@@ -1,5 +1,6 @@
 package bench;
 
+import jdk.internal.value.ValueClass;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -9,9 +10,11 @@ import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
+import util.FlatList;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 // Benchmark - Specialized                                        Mode  Cnt     Score    Error  Units
@@ -68,6 +71,23 @@ public class HourlyDataComputationBenchmark {
       valueHourlyData = value.weather.WeatherService.getHourlyData(paris, startDate, endDate);
     } catch (IOException e) {
       throw new AssertionError(e);
+    }
+    checkFlatIfAvailable(valueHourlyData.temperatures());
+    checkFlatIfAvailable(valueHourlyData.windspeeds());
+    checkFlatIfAvailable(valueHourlyData.precipitations());
+  }
+
+  private static void checkFlatIfAvailable(List<?> list) {
+    if (!(list instanceof FlatList<?> flatList)) {
+      throw new AssertionError("list is not a FlatList");
+    }
+    try {
+      var _ = ValueClass.class;
+    } catch(IllegalAccessError _) {
+      return;  // okay !
+    }
+    if (!flatList.isFlat()) {
+      throw new AssertionError("list array is not a flat");
     }
   }
 

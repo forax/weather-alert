@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import jdk.internal.vm.annotation.LooselyConsistentValue;
 import jdk.internal.vm.annotation.NullRestricted;
 import util.FlatList;
 import value.weather.WeatherService.*;
@@ -47,6 +48,7 @@ public class WeatherComputation {
       FlatList.factory(MethodHandles.lookup(), WeatherData.class);
 
   //public value record WeatherData(Temperature temperature, Windspeed windspeed, Precipitation precipitation) { }
+  @LooselyConsistentValue
   public value record WeatherData(@NullRestricted Temperature temperature, @NullRestricted Windspeed windspeed, @NullRestricted Precipitation precipitation) { }
 
   public static List<WeatherData> toWeatherData(HourlyData data) {
