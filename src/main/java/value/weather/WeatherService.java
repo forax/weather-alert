@@ -128,7 +128,7 @@ public final class WeatherService {
       if (value < 0) {
         throw new IllegalArgumentException("value < 0");
       }
-      //super();  // comment for IntelliJ
+      // super();  // comment for IntelliJ
     }
 
     @JsonCreator
@@ -151,7 +151,7 @@ public final class WeatherService {
       if (value < 0) {
         throw new IllegalArgumentException("value < 0");
       }
-      //super();   // comment for IntelliJ
+      // super();   // comment for IntelliJ
     }
 
     @JsonCreator

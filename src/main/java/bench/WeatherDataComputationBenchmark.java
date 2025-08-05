@@ -34,7 +34,7 @@ import util.FlatList;
 @State(Scope.Benchmark)
 @Fork(
     value = 1,
-    jvmArgs = {"--enable-preview"})
+    jvmArgs = {"--enable-preview" /*, "-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintInlineLayout" */})
 @Warmup(iterations = 5, time = 1)
 @Measurement(iterations = 5, time = 1)
 public class WeatherDataComputationBenchmark {

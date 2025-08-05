@@ -6,10 +6,12 @@ import java.util.Arrays;
 import java.util.Objects;
 import jdk.internal.value.ValueClass;
 import jdk.internal.misc.Unsafe;
+import jdk.internal.vm.annotation.LooselyConsistentValue;
 
 public final class GenericFlatList<E> extends AbstractList<E> {
+  record ValueClassInfo(boolean isAtomic, Object defaultValue) {}
   private static final boolean VALUE_CLASS_AVAILABLE;
-  private static final ClassValue<Object> DEFAULT_VALUE;
+  private static final ClassValue<ValueClassInfo> INFO_VALUE;
   static {
     boolean valueClassAvailable;
     try {
@@ -21,25 +23,28 @@ public final class GenericFlatList<E> extends AbstractList<E> {
     }
     VALUE_CLASS_AVAILABLE = valueClassAvailable;
 
-    ClassValue<Object> defaultValue;
+    ClassValue<ValueClassInfo> infoValue;
     try {
-      defaultValue = new ClassValue<>() {
+      infoValue = new ClassValue<>() {
         private static final Unsafe UNSAFE = Unsafe.getUnsafe();  // check that Unsafe is visible
 
         @Override
-        protected Object computeValue(Class<?> type) {
+        protected ValueClassInfo computeValue(Class<?> type) {
+          Object defaultValue;
           try {
-            return UNSAFE.allocateInstance(type);
+            defaultValue = UNSAFE.allocateInstance(type);
           } catch (InstantiationException e) {
             throw new AssertionError(e);
           }
+          var isAtomic = !type.isAnnotationPresent(LooselyConsistentValue.class);
+          return new ValueClassInfo(isAtomic, defaultValue);
         }
       };
     } catch (IllegalAccessError _) {
-      defaultValue = null;
+      infoValue = null;
       System.err.println("WARNING: default value is not available !");
     }
-    DEFAULT_VALUE = defaultValue;
+    INFO_VALUE = infoValue;
   }
 
   private E[] values;
@@ -48,8 +53,11 @@ public final class GenericFlatList<E> extends AbstractList<E> {
   @SuppressWarnings("unchecked")
   public GenericFlatList(Class<? extends E> elementType, int capacity) {
     if (VALUE_CLASS_AVAILABLE) {
-      if (DEFAULT_VALUE != null) {
-        values = (E[]) ValueClass.newNullRestrictedAtomicArray(elementType, capacity, DEFAULT_VALUE.get(elementType));
+      if (INFO_VALUE != null) {
+        var classInfo = INFO_VALUE.get(elementType);
+        values = (E[]) (classInfo.isAtomic ?
+            ValueClass.newNullRestrictedAtomicArray(elementType, capacity, classInfo.defaultValue) :
+            ValueClass.newNullRestrictedNonAtomicArray(elementType, capacity, classInfo.defaultValue));
         assert ValueClass.isFlatArray(values);
         return;
       }
@@ -79,9 +87,12 @@ public final class GenericFlatList<E> extends AbstractList<E> {
   private void resize() {
     var newCapacity = Math.max(16, values.length << 1);
     if (VALUE_CLASS_AVAILABLE) {
-      if (DEFAULT_VALUE != null) {
+      if (INFO_VALUE != null) {
         var componentType = values.getClass().getComponentType();
-        var newArray = (E[]) ValueClass.newNullRestrictedAtomicArray(componentType, newCapacity, DEFAULT_VALUE.get(componentType));
+        var defaultValue = INFO_VALUE.get(componentType).defaultValue;
+        var newArray = (E[]) (ValueClass.isAtomicArray(values) ?
+            ValueClass.newNullRestrictedAtomicArray(componentType, newCapacity, defaultValue) :
+            ValueClass.newNullRestrictedNonAtomicArray(componentType, newCapacity, defaultValue));
         System.arraycopy(values, 0, newArray, 0, values.length);
         values = newArray;
         return;

@@ -391,7 +391,6 @@ public final class FlatListTest {
   }
 
   @Test
-  @Disabled  // @LooselyConsistentValue does not work with arrays ?
   @DisplayName("Should handle a value class with several fields")
   public void testSeveralFieldsValueClass() {
     @LooselyConsistentValue

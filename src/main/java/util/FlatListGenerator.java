@@ -2,7 +2,11 @@ package util;
 
 import jdk.internal.misc.Unsafe;
 import jdk.internal.value.ValueClass;
+import jdk.internal.vm.annotation.LooselyConsistentValue;
 
+import java.io.IOException;
+import java.lang.classfile.attribute.RuntimeVisibleAnnotationsAttribute;
+import java.lang.classfile.constantpool.Utf8Entry;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -100,6 +104,10 @@ final class FlatListGenerator {
         .build(thisClass,
         classBuilder -> {
           // Class declaration: public final class ValueListImpl implements ValueList<ElementType>
+          //var isAtomicElement = VALUE_CLASS_AVAILABLE ?
+          //    !elementType.isAnnotationPresent(LooselyConsistentValue.class) :
+          //    true;
+          var isAtomicElement = !IS_LOOSELY_CONSISTENT_VALUE.get(elementType);
           classBuilder
               .withVersion(JAVA_25_VERSION, 0)
               .withFlags(ACC_PUBLIC | ACC_FINAL | ACC_IDENTITY)
@@ -110,7 +118,7 @@ final class FlatListGenerator {
           generateFields(classBuilder, elementDesc);
 
           // Methods
-          generateConstructors(classBuilder, thisClass, elementDesc);
+          generateConstructors(classBuilder, thisClass, elementDesc, isAtomicElement);
           generateSizeMethod(classBuilder, thisClass);
           generateGetMethod(classBuilder, thisClass, elementDesc);
           generateSetMethod(classBuilder, thisClass, elementDesc);
@@ -135,7 +143,7 @@ final class FlatListGenerator {
         fieldBuilder -> fieldBuilder.withFlags(ACC_PRIVATE | ACC_STRICT));
   }
 
-  private static void generateConstructors(ClassBuilder classBuilder, ClassDesc thisClass, ClassDesc elementDesc) {
+  private static void generateConstructors(ClassBuilder classBuilder, ClassDesc thisClass, ClassDesc elementDesc, boolean isAtomicElement) {
     // Constructor: public ValueListImpl(int capacity)
     classBuilder.withMethod("<init>",
         MethodTypeDesc.of(CD_void, CD_int),
@@ -146,10 +154,11 @@ final class FlatListGenerator {
               .aload(0)  // load this
               .ldc(elementDesc)  // load elementType
               .iload(1)  // load capacity
+              .loadConstant(isAtomicElement ? 1 : 0)  // load atomicity
               .ldc(DynamicConstantDesc.ofNamed(  // load default value
                   DEFAULT_VALUE_BSM, "_", elementDesc))
               .invokestatic(CD_FLAT_LIST, "newArray",
-                  MethodTypeDesc.of(CD_Object.arrayType(), CD_Class, CD_int, CD_Object), true)
+                  MethodTypeDesc.of(CD_Object.arrayType(), CD_Class, CD_int, CD_boolean, CD_Object), true)
               .checkcast(elementArrayDesc)
               .putfield(thisClass, "array", elementArrayDesc)
               .aload(0)  // load this
@@ -352,6 +361,39 @@ final class FlatListGenerator {
     });
   }
 
+  private static final ClassDesc CD_LOOSELY_CONSISTENT_VALUE =
+      ClassDesc.of("jdk.internal.vm.annotation.LooselyConsistentValue");
+  static {
+    assert CD_LOOSELY_CONSISTENT_VALUE.equals(ClassDesc.of(LooselyConsistentValue.class.getName()));
+  }
+  private static final ClassValue<Boolean> IS_LOOSELY_CONSISTENT_VALUE =
+      new ClassValue<>() {
+        @Override
+        protected Boolean computeValue(Class<?> type) {
+          var classFileName = type.getName().replace('.', '/') + ".class";
+          ClassModel classModel;
+          try(var classStream = type.getClassLoader().getResourceAsStream(classFileName)) {
+            if (classStream == null) {
+              throw new IllegalStateException("Could not find class file: " + classFileName);
+            }
+            classModel = ClassFile.of().parse(classStream.readAllBytes());
+          } catch (IOException e) {
+            throw new IllegalStateException("Error reading class file for " + type.getName(), e);
+          }
+
+          var visibleAnnotations = classModel.findAttribute(Attributes.runtimeVisibleAnnotations());
+          if (visibleAnnotations.isPresent()) {
+            var annotations = visibleAnnotations.get();
+            if (annotations.annotations().stream()
+                .anyMatch(annotation ->
+                    CD_LOOSELY_CONSISTENT_VALUE.equals(annotation.classSymbol()))) {
+              return true;
+            }
+          }
+          return false;
+        }
+      };
+
   private static final boolean VALUE_CLASS_AVAILABLE;
   private static final ClassValue<Object> DEFAULT_VALUE;
   static {
@@ -394,11 +436,17 @@ final class FlatListGenerator {
     return (E) DEFAULT_VALUE.get(elementType);
   }
 
+  private static boolean isAtomic(Class<?> elementType) {
+    return !elementType.isAnnotationPresent(LooselyConsistentValue.class);
+  }
+
   @SuppressWarnings("unchecked")
-  static <E> E[] newArray(Class<E> elementType, int capacity, E defaultValue) {
+  static <E> E[] newArray(Class<E> elementType, int capacity, boolean isAtomic, E defaultValue) {
     if (VALUE_CLASS_AVAILABLE) {
       if (DEFAULT_VALUE != null) {
-        var array = (E[]) ValueClass.newNullRestrictedAtomicArray(elementType, capacity, defaultValue);
+        var array = (E[]) (isAtomic ?
+            ValueClass.newNullRestrictedAtomicArray(elementType, capacity, defaultValue) :
+            ValueClass.newNullRestrictedNonAtomicArray(elementType, capacity, defaultValue));
         assert ValueClass.isFlatArray(array);
         return array;
       }
@@ -414,7 +462,9 @@ final class FlatListGenerator {
     if (VALUE_CLASS_AVAILABLE) {
       if (DEFAULT_VALUE != null) {
         var componentType = array.getClass().getComponentType();
-        var newArray = (E[]) ValueClass.newNullRestrictedAtomicArray(componentType, newCapacity, DEFAULT_VALUE.get(componentType));
+        var newArray = (E[]) (ValueClass.isAtomicArray(array) ?
+            ValueClass.newNullRestrictedAtomicArray(componentType, newCapacity, DEFAULT_VALUE.get(componentType)) :
+            ValueClass.newNullRestrictedNonAtomicArray(componentType, newCapacity, DEFAULT_VALUE.get(componentType)));
         System.arraycopy(array, 0, newArray, 0, array.length);
         return newArray;
       }
