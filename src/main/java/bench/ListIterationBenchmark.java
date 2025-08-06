@@ -19,12 +19,13 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 // Benchmark                                                (size)  Mode  Cnt      Score    Error  Units
-// ListIterationBenchmark.sumArrayList                       10000  avgt    5   4199,513 ± 14,517  ns/op
-// ListIterationBenchmark.sumGenericFlatList                 10000  avgt    5   3161,144 ± 10,539  ns/op
-// ListIterationBenchmark.sumNullRestrictedGenericFlatList   10000  avgt    5   2895,744 ± 12,455  ns/op
-// ListIterationBenchmark.sumNullRestrictedFlatList          10000  avgt    5   2895,486 ±  9,538  ns/op
-// ListIterationBenchmark.sumNullableFlatList                10000  avgt    5  13325,575 ± 54,399  ns/op
-// ListIterationBenchmark.sumVFlatList                       10000  avgt    5   3138,913 ± 34,849  ns/op
+// ListIterationBenchmark.sumArrayList                       10000  avgt    5   4250,616 ±  7,650  ns/op
+// ListIterationBenchmark.sumFlatList                        10000  avgt    5   3179,779 ±  6,320  ns/op
+// ListIterationBenchmark.sumGenericFlatList                 10000  avgt    5   3184,859 ±  8,562  ns/op
+// ListIterationBenchmark.sumNullRestrictedFlatList          10000  avgt    5   2894,140 ± 14,630  ns/op
+// ListIterationBenchmark.sumNullRestrictedGenericFlatList   10000  avgt    5   2895,330 ± 10,916  ns/op
+// ListIterationBenchmark.sumNullableFlatList                10000  avgt    5  13309,213 ± 46,524  ns/op
+// ListIterationBenchmark.sumNullableGenericFlatList         10000  avgt    5  11098,386 ± 36,193  ns/op
 
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
