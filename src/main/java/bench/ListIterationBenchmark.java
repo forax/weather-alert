@@ -71,7 +71,7 @@ public class ListIterationBenchmark {
     }
   }
 
-  //@Benchmark
+  @Benchmark
   public int sumArrayList() {
     var sum = 0;
     for (var i = 0; i < arrayList.size(); i++) {
@@ -81,7 +81,7 @@ public class ListIterationBenchmark {
     return sum;
   }
 
-  //@Benchmark
+  @Benchmark
   public int sumGenericFlatList() {
     var sum = 0;
     for (var i = 0; i < genericFlatList.size(); i++) {
@@ -91,7 +91,20 @@ public class ListIterationBenchmark {
     return sum;
   }
 
-  //@Benchmark
+  @Benchmark
+  @Fork(value = 1, jvmArgs = {
+      "--enable-preview",
+      "--add-exports=java.base/jdk.internal.value=ALL-UNNAMED"})
+  public int sumNullableGenericFlatList() {
+    var sum = 0;
+    for (var i = 0; i < genericFlatList.size(); i++) {
+      var value = genericFlatList.get(i);
+      sum += value.v;
+    }
+    return sum;
+  }
+
+  @Benchmark
   @Fork(value = 1, jvmArgs = {
       "--enable-preview",
       "--add-exports=java.base/jdk.internal.value=ALL-UNNAMED",
@@ -105,7 +118,7 @@ public class ListIterationBenchmark {
     return sum;
   }
 
-  //@Benchmark
+  @Benchmark
   public int sumFlatList() {
     var sum = 0;
     for (var i = 0; i < flatList.size(); i++) {
@@ -115,7 +128,7 @@ public class ListIterationBenchmark {
     return sum;
   }
 
-  //@Benchmark
+  @Benchmark
   @Fork(value = 1, jvmArgs = {
       "--enable-preview",
       "--add-exports=java.base/jdk.internal.value=ALL-UNNAMED"})
@@ -128,7 +141,7 @@ public class ListIterationBenchmark {
     return sum;
   }
 
-  //@Benchmark
+  @Benchmark
   @Fork(value = 1, jvmArgs = {
       "--enable-preview",
       "--add-exports=java.base/jdk.internal.value=ALL-UNNAMED",

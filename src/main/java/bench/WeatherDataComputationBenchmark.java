@@ -109,28 +109,28 @@ public class WeatherDataComputationBenchmark {
   }
 
 
-  @Benchmark
+  //@Benchmark
   public identity.weather.WeatherComputation.WeatherResult identityComputation() {
     return identity.weather.WeatherComputation.computeWeatherData(identityWeatherDataList);
   }
 
-  @Benchmark
+  //@Benchmark
   public primitive.weather.WeatherComputation.WeatherResult primitiveComputation() {
     return primitive.weather.WeatherComputation.computeWeatherData(primitiveWeatherDataList);
   }
 
-  @Benchmark
+  //@Benchmark
   public value.weather.WeatherComputation.WeatherResult valueComputation() {
     return value.weather.WeatherComputation.computeWeatherData(valueWeatherDataList);
   }
 
-  @Benchmark
+  //@Benchmark
   @Fork(value = 1, jvmArgs = {"--enable-preview", "--add-exports=java.base/jdk.internal.value=ALL-UNNAMED"})
   public value.weather.WeatherComputation.WeatherResult valueNullableComputation() {
     return value.weather.WeatherComputation.computeWeatherData(valueWeatherDataList);
   }
 
-  @Benchmark
+  //@Benchmark
   @Fork(value = 1, jvmArgs = {"--enable-preview", "--add-exports=java.base/jdk.internal.value=ALL-UNNAMED", "--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED"})
   public value.weather.WeatherComputation.WeatherResult valueNullRestrictedComputation() {
     return value.weather.WeatherComputation.computeWeatherData(valueWeatherDataList);

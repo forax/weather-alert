@@ -384,11 +384,9 @@ final class FlatListGenerator {
           var visibleAnnotations = classModel.findAttribute(Attributes.runtimeVisibleAnnotations());
           if (visibleAnnotations.isPresent()) {
             var annotations = visibleAnnotations.get();
-            if (annotations.annotations().stream()
+            return annotations.annotations().stream()
                 .anyMatch(annotation ->
-                    CD_LOOSELY_CONSISTENT_VALUE.equals(annotation.classSymbol()))) {
-              return true;
-            }
+                    CD_LOOSELY_CONSISTENT_VALUE.equals(annotation.classSymbol()));
           }
           return false;
         }

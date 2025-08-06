@@ -1,5 +1,10 @@
 package util;
 
+import java.io.IOException;
+import java.lang.classfile.Attributes;
+import java.lang.classfile.ClassFile;
+import java.lang.classfile.ClassModel;
+import java.lang.constant.ClassDesc;
 import java.lang.reflect.Array;
 import java.util.AbstractList;
 import java.util.Arrays;
@@ -36,7 +41,7 @@ public final class GenericFlatList<E> extends AbstractList<E> {
           } catch (InstantiationException e) {
             throw new AssertionError(e);
           }
-          var isAtomic = !type.isAnnotationPresent(LooselyConsistentValue.class);
+          var isAtomic = !isLooselyConsistentValue(type);
           return new ValueClassInfo(isAtomic, defaultValue);
         }
       };
@@ -45,6 +50,34 @@ public final class GenericFlatList<E> extends AbstractList<E> {
       System.err.println("WARNING: default value is not available !");
     }
     INFO_VALUE = infoValue;
+  }
+
+  private static final ClassDesc CD_LOOSELY_CONSISTENT_VALUE =
+      ClassDesc.of("jdk.internal.vm.annotation.LooselyConsistentValue");
+  static {
+    assert CD_LOOSELY_CONSISTENT_VALUE.equals(ClassDesc.of(LooselyConsistentValue.class.getName()));
+  }
+
+  private static boolean isLooselyConsistentValue(Class<?> elementType) {
+    var classFileName = elementType.getName().replace('.', '/') + ".class";
+    ClassModel classModel;
+    try(var classStream = elementType.getClassLoader().getResourceAsStream(classFileName)) {
+      if (classStream == null) {
+        throw new IllegalStateException("Could not find class file: " + classFileName);
+      }
+      classModel = ClassFile.of().parse(classStream.readAllBytes());
+    } catch (IOException e) {
+      throw new IllegalStateException("Error reading class file for " + elementType.getName(), e);
+    }
+
+    var visibleAnnotations = classModel.findAttribute(Attributes.runtimeVisibleAnnotations());
+    if (visibleAnnotations.isPresent()) {
+      var annotations = visibleAnnotations.get();
+      return annotations.annotations().stream()
+          .anyMatch(annotation ->
+              CD_LOOSELY_CONSISTENT_VALUE.equals(annotation.classSymbol()));
+    }
+    return false;
   }
 
   private E[] values;
