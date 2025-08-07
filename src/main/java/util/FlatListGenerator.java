@@ -102,9 +102,6 @@ final class FlatListGenerator {
         .build(thisClass,
         classBuilder -> {
           // Class declaration: public final class ValueListImpl implements ValueList<ElementType>
-          //var isAtomicElement = VALUE_CLASS_AVAILABLE ?
-          //    !elementType.isAnnotationPresent(LooselyConsistentValue.class) :
-          //    true;
           var isAtomicElement = !IS_LOOSELY_CONSISTENT_VALUE.get(elementType);
           classBuilder
               .withVersion(JAVA_25_VERSION, 0)
@@ -359,18 +356,19 @@ final class FlatListGenerator {
     });
   }
 
-  private static final ClassDesc CD_LOOSELY_CONSISTENT_VALUE =
-      ClassDesc.of("jdk.internal.vm.annotation.LooselyConsistentValue");
+  private static final String LOOSELY_CONSISTENT_VALUE_DESCRIPTOR =
+      "Ljdk/internal/vm/annotation/LooselyConsistentValue;";
   static {
-    assert CD_LOOSELY_CONSISTENT_VALUE.equals(ClassDesc.of(LooselyConsistentValue.class.getName()));
+    assert LOOSELY_CONSISTENT_VALUE_DESCRIPTOR.equals(LooselyConsistentValue.class.descriptorString());
   }
+
   private static final ClassValue<Boolean> IS_LOOSELY_CONSISTENT_VALUE =
       new ClassValue<>() {
         @Override
         protected Boolean computeValue(Class<?> type) {
           var classFileName = type.getName().replace('.', '/') + ".class";
           ClassModel classModel;
-          try(var classStream = type.getClassLoader().getResourceAsStream(classFileName)) {
+          try (var classStream = type.getClassLoader().getResourceAsStream(classFileName)) {
             if (classStream == null) {
               throw new IllegalStateException("Could not find class file: " + classFileName);
             }
@@ -381,10 +379,11 @@ final class FlatListGenerator {
 
           var visibleAnnotations = classModel.findAttribute(Attributes.runtimeVisibleAnnotations());
           if (visibleAnnotations.isPresent()) {
-            var annotations = visibleAnnotations.get();
+            var annotations = visibleAnnotations.orElseThrow();
             return annotations.annotations().stream()
-                .anyMatch(annotation ->
-                    CD_LOOSELY_CONSISTENT_VALUE.equals(annotation.classSymbol()));
+                .anyMatch(
+                    annotation ->
+                        LOOSELY_CONSISTENT_VALUE_DESCRIPTOR.equals(annotation.className().stringValue()));
           }
           return false;
         }

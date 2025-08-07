@@ -52,16 +52,16 @@ public final class GenericFlatList<E> extends AbstractList<E> {
     INFO_VALUE = infoValue;
   }
 
-  private static final ClassDesc CD_LOOSELY_CONSISTENT_VALUE =
-      ClassDesc.of("jdk.internal.vm.annotation.LooselyConsistentValue");
+  private static final String LOOSELY_CONSISTENT_VALUE_DESCRIPTOR =
+      "Ljdk/internal/vm/annotation/LooselyConsistentValue;";
   static {
-    assert CD_LOOSELY_CONSISTENT_VALUE.equals(ClassDesc.of(LooselyConsistentValue.class.getName()));
+    assert LOOSELY_CONSISTENT_VALUE_DESCRIPTOR.equals(LooselyConsistentValue.class.descriptorString());
   }
 
   private static boolean isLooselyConsistentValue(Class<?> elementType) {
     var classFileName = elementType.getName().replace('.', '/') + ".class";
     ClassModel classModel;
-    try(var classStream = elementType.getClassLoader().getResourceAsStream(classFileName)) {
+    try (var classStream = elementType.getClassLoader().getResourceAsStream(classFileName)) {
       if (classStream == null) {
         throw new IllegalStateException("Could not find class file: " + classFileName);
       }
@@ -72,10 +72,11 @@ public final class GenericFlatList<E> extends AbstractList<E> {
 
     var visibleAnnotations = classModel.findAttribute(Attributes.runtimeVisibleAnnotations());
     if (visibleAnnotations.isPresent()) {
-      var annotations = visibleAnnotations.get();
+      var annotations = visibleAnnotations.orElseThrow();
       return annotations.annotations().stream()
-          .anyMatch(annotation ->
-              CD_LOOSELY_CONSISTENT_VALUE.equals(annotation.classSymbol()));
+          .anyMatch(
+              annotation ->
+                  LOOSELY_CONSISTENT_VALUE_DESCRIPTOR.equals(annotation.className().stringValue()));
     }
     return false;
   }
