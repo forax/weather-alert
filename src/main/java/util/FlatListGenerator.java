@@ -5,8 +5,6 @@ import jdk.internal.value.ValueClass;
 import jdk.internal.vm.annotation.LooselyConsistentValue;
 
 import java.io.IOException;
-import java.lang.classfile.attribute.RuntimeVisibleAnnotationsAttribute;
-import java.lang.classfile.constantpool.Utf8Entry;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
