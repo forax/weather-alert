@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 
 // --enable-preview --add-exports=java.base/jdk.internal.value=ALL-UNNAMED --add-exports=java.base/jdk.internal.misc=ALL-UNNAMED
+// -XX:+UnlockDiagnosticVMOptions -XX:+PrintInlineLayout
 class WeatherExample {
   static void main() throws IOException {
     // Coordinates
