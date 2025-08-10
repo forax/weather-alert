@@ -43,26 +43,26 @@ public final class GenericFlatList<E> extends AbstractList<E> {
   }
 
   @SuppressWarnings("unchecked")
-  public GenericFlatList(Class<? extends E> elementType, int properties, int capacity) {
+  public GenericFlatList(Class<? extends E> elementType, int properties, int initialCapacity) {
     if (!elementType.isValue()) {
       throw new IllegalArgumentException("Element type must be a value type");
     }
     values = (E[]) switch (properties) {
       case FLAT -> {
-        var values = ValueClass.newNullableAtomicArray(elementType, capacity);
+        var values = ValueClass.newNullableAtomicArray(elementType, initialCapacity);
         checkFlat(values);
         yield values;
       }
-      case NON_FLAT -> Array.newInstance(elementType, capacity);
+      case NON_FLAT -> Array.newInstance(elementType, initialCapacity);
       case NON_NULL -> {
         var defaultValue = DEFAULT_VALUE.get(elementType);
-        var values =  ValueClass.newNullRestrictedAtomicArray(elementType, capacity, defaultValue);
+        var values =  ValueClass.newNullRestrictedAtomicArray(elementType, initialCapacity, defaultValue);
         checkFlat(values);
         yield values;
       }
       case NON_ATOMIC_NON_NULL -> {
         var defaultValue = DEFAULT_VALUE.get(elementType);
-        var values =  ValueClass.newNullRestrictedNonAtomicArray(elementType, capacity, defaultValue);
+        var values =  ValueClass.newNullRestrictedNonAtomicArray(elementType, initialCapacity, defaultValue);
         checkFlat(values);
         yield values;
       }

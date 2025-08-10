@@ -47,19 +47,25 @@ public final class FlatListFactory {
 
   /** Creates a new specialized List for the given element type */
   @SuppressWarnings("unchecked")
-  public static <T> List<T> create(Class<? extends T> elementType, int properties) {
+  public static <T> List<T> create(Class<? extends T> elementType, int properties, int initialCapacity) {
     Objects.requireNonNull(elementType);
     // properties are checked later
     var erasedType = elementType.isValue() ? elementType : Object.class;
     var cache = SPECIALIZED_CONSTRUCTORS.get(erasedType);
     var constructor = cache.constructor(erasedType, properties);
     try {
-      return (List<T>) constructor.invokeExact();
+      return (List<T>) constructor.invokeExact(initialCapacity);
     } catch (RuntimeException | Error e) {
       throw e;
     } catch (Throwable e) {
       throw new UndeclaredThrowableException(e);
     }
+  }
+
+  public static <T> List<T> create(Class<? extends T> elementType, int properties) {
+    Objects.requireNonNull(elementType);
+    // properties are checked later
+    return create(elementType, properties, 16);
   }
 
   public static boolean isFlat(List<?> list) {
@@ -134,8 +140,8 @@ public final class FlatListFactory {
 
       // Get constructor
       return hiddenLookup
-          .findConstructor(hiddenLookup.lookupClass(), MethodType.methodType(void.class))
-          .asType(MethodType.methodType(List.class));
+          .findConstructor(hiddenLookup.lookupClass(), MethodType.methodType(void.class, int.class))
+          .asType(MethodType.methodType(List.class, int.class));
     } catch (NoSuchMethodException | IllegalAccessException e) {
       throw new AssertionError(e);
     }
@@ -212,21 +218,20 @@ public final class FlatListFactory {
 
   private static void generateTemplateConstructor(ClassBuilder classBuilder) {
     classBuilder.withMethod(
-        INIT_NAME, MethodTypeDesc.of(CD_void),
+        INIT_NAME, MethodTypeDesc.of(CD_void, CD_int),
         ACC_PUBLIC,
         methodBuilder ->
-            methodBuilder.withCode(
-                codeBuilder -> {
+            methodBuilder.withCode(codeBuilder -> {
                   // Call super()
                   codeBuilder
                       .aload(0)
                       .invokespecial(CD_ABSTRACT_FLAT_LIST, INIT_NAME, MethodTypeDesc.of(CD_void));
 
-                  // Initialize array field with initial capacity of 16
+                  // Initialize array field with the initial capacity
                   codeBuilder
                       .aload(0)
                       .ldc(SPECIALIZATION)
-                      .bipush(16)
+                      .iload(1)  // initialCapacity
                       .invokestatic(
                           CD_FACTORY,
                           "newArray",
