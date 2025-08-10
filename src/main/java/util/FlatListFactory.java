@@ -49,7 +49,12 @@ public final class FlatListFactory {
   @SuppressWarnings("unchecked")
   public static <T> List<T> create(Class<? extends T> elementType, int properties, int initialCapacity) {
     Objects.requireNonNull(elementType);
-    // properties are checked later
+    if (properties < NON_FLAT || properties > NON_ATOMIC_FLAT)  {
+      throw new IllegalArgumentException("Invalid properties: " + properties);
+    }
+    if (initialCapacity < 1) {
+     throw new IllegalArgumentException("Invalid initialCapacity: " + initialCapacity);
+    }
     var erasedType = elementType.isValue() ? elementType : Object.class;
     var cache = SPECIALIZED_CONSTRUCTORS.get(erasedType);
     var constructor = cache.constructor(erasedType, properties);
@@ -63,8 +68,6 @@ public final class FlatListFactory {
   }
 
   public static <T> List<T> create(Class<? extends T> elementType, int properties) {
-    Objects.requireNonNull(elementType);
-    // properties are checked later
     return create(elementType, properties, 16);
   }
 
