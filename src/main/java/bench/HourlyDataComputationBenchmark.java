@@ -10,7 +10,7 @@ import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
-import util.FlatList;
+import util.FlatListFactory;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -35,7 +35,10 @@ import java.util.concurrent.TimeUnit;
 @State(Scope.Benchmark)
 @Fork(
     value = 1,
-    jvmArgs = {"--enable-preview"})
+    jvmArgs = {
+        "--enable-preview",
+        "--add-exports=java.base/jdk.internal.value=ALL-UNNAMED",
+        "--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED"})
 @Warmup(iterations = 5, time = 1)
 @Measurement(iterations = 5, time = 1)
 public class HourlyDataComputationBenchmark {
@@ -72,22 +75,14 @@ public class HourlyDataComputationBenchmark {
     } catch (IOException e) {
       throw new AssertionError(e);
     }
-    checkFlatIfAvailable(valueHourlyData.temperatures());
-    checkFlatIfAvailable(valueHourlyData.windspeeds());
-    checkFlatIfAvailable(valueHourlyData.precipitations());
+    checkFlat(valueHourlyData.temperatures());
+    checkFlat(valueHourlyData.windspeeds());
+    checkFlat(valueHourlyData.precipitations());
   }
 
-  private static void checkFlatIfAvailable(List<?> list) {
-    if (!(list instanceof FlatList<?> flatList)) {
+  private static void checkFlat(List<?> list) {
+    if (!(FlatListFactory.isFlat(list))) {
       throw new AssertionError("list is not a FlatList");
-    }
-    try {
-      var _ = ValueClass.class;
-    } catch(IllegalAccessError _) {
-      return;  // okay !
-    }
-    if (!flatList.isFlat()) {
-      throw new AssertionError("list array is not a flat");
     }
   }
 
@@ -107,13 +102,11 @@ public class HourlyDataComputationBenchmark {
   }
 
   //@Benchmark
-  @Fork(value = 1, jvmArgs = {"--enable-preview", "--add-exports=java.base/jdk.internal.value=ALL-UNNAMED"})
   public value.weather.WeatherComputation.WeatherResult valueNullableComputation() {
     return value.weather.WeatherComputation.computeHourlyData(valueHourlyData);
   }
 
   //@Benchmark
-  @Fork(value = 1, jvmArgs = {"--enable-preview", "--add-exports=java.base/jdk.internal.value=ALL-UNNAMED", "--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED"})
   public value.weather.WeatherComputation.WeatherResult valueNullRestrictedComputation() {
     return value.weather.WeatherComputation.computeHourlyData(valueHourlyData);
   }

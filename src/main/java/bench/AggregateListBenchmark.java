@@ -18,6 +18,8 @@ import java.util.AbstractList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import static util.GenericFlatList.FLAT;
+
 // Benchmark                                       Mode  Cnt    Score   Error  Units
 // AggregateListBenchmark.sumGenericAggregateList  avgt    5  109,139 ± 1,189  ns/op
 // AggregateListBenchmark.sumAggregateList         avgt    5  112,068 ± 2,655  ns/op
@@ -51,8 +53,8 @@ public class AggregateListBenchmark {
     }
   }
 
-  private final GenericFlatList<Integer> list0 = new GenericFlatList<>(Integer.class, 1024);
-  private final GenericFlatList<Integer> list1 = new GenericFlatList<>(Integer.class, 1024);
+  private final GenericFlatList<Integer> list0 = new GenericFlatList<>(Integer.class, FLAT, 1024);
+  private final GenericFlatList<Integer> list1 = new GenericFlatList<>(Integer.class, FLAT, 1024);
   {
     for(var i = 0; i < 1024; i++) {
       list0.add(i);

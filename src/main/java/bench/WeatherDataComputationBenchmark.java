@@ -18,7 +18,7 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 import util.AggregateList;
-import util.FlatList;
+import util.FlatListFactory;
 
 // Benchmark                                                                Mode  Cnt     Score    Error  Units
 // WeatherDataComputationBenchmark.aggregateValueComputation                avgt    5  1950,894 ± 58,790  us/op
@@ -44,16 +44,8 @@ public class WeatherDataComputationBenchmark {
   private final LocalDate startDate = endDate.minusYears(20);
 
   private static void checkFlatIfAvailable(List<?> list) {
-    if (!(list instanceof FlatList<?> flatList)) {
-      throw new AssertionError("list is not a FlatList");
-    }
-    try {
-      var _ = ValueClass.class;
-    } catch(IllegalAccessError _) {
-      return;  // okay !
-    }
-    if (!flatList.isFlat()) {
-      throw new AssertionError("list array is not flat");
+    if (!FlatListFactory.isFlat(list)) {
+      throw new AssertionError("not a flat list");
     }
   }
 

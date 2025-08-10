@@ -1,109 +1,81 @@
 package util;
 
-import java.io.IOException;
-import java.lang.classfile.Attributes;
-import java.lang.classfile.ClassFile;
-import java.lang.classfile.ClassModel;
-import java.lang.constant.ClassDesc;
 import java.lang.reflect.Array;
 import java.util.AbstractList;
 import java.util.Arrays;
 import java.util.Objects;
 import jdk.internal.value.ValueClass;
 import jdk.internal.misc.Unsafe;
-import jdk.internal.vm.annotation.LooselyConsistentValue;
 
 public final class GenericFlatList<E> extends AbstractList<E> {
-  record ValueClassInfo(boolean isAtomic, Object defaultValue) {}
-  private static final boolean VALUE_CLASS_AVAILABLE;
-  private static final ClassValue<ValueClassInfo> INFO_VALUE;
-  static {
-    boolean valueClassAvailable;
-    try {
-      var _ = ValueClass.class;  // check that ValueClass is visible
-      valueClassAvailable = true;
-    } catch (IllegalAccessError _) {
-      valueClassAvailable = false;
-      System.err.println("WARNING: flat arrays are not available !");
+  private static final ClassValue<Object> DEFAULT_VALUE = new ClassValue<>() {
+    @Override
+    protected Object computeValue(Class<?> type) {
+      return DefaultValue.defaultValue(type);
     }
-    VALUE_CLASS_AVAILABLE = valueClassAvailable;
+  };
 
-    ClassValue<ValueClassInfo> infoValue;
-    try {
-      infoValue = new ClassValue<>() {
-        private static final Unsafe UNSAFE = Unsafe.getUnsafe();  // check that Unsafe is visible
+  private static final class DefaultValue {
+    private static final Unsafe UNSAFE = Unsafe.getUnsafe();
 
-        @Override
-        protected ValueClassInfo computeValue(Class<?> type) {
-          Object defaultValue;
-          try {
-            defaultValue = UNSAFE.allocateInstance(type);
-          } catch (InstantiationException e) {
-            throw new AssertionError(e);
-          }
-          var isAtomic = !isLooselyConsistentValue(type);
-          return new ValueClassInfo(isAtomic, defaultValue);
-        }
-      };
-    } catch (IllegalAccessError _) {
-      infoValue = null;
-      System.err.println("WARNING: default value is not available !");
-    }
-    INFO_VALUE = infoValue;
-  }
-
-  private static final String LOOSELY_CONSISTENT_VALUE_DESCRIPTOR =
-      "Ljdk/internal/vm/annotation/LooselyConsistentValue;";
-  static {
-    assert LOOSELY_CONSISTENT_VALUE_DESCRIPTOR.equals(LooselyConsistentValue.class.descriptorString());
-  }
-
-  private static boolean isLooselyConsistentValue(Class<?> elementType) {
-    var classFileName = elementType.getName().replace('.', '/') + ".class";
-    ClassModel classModel;
-    try (var classStream = elementType.getClassLoader().getResourceAsStream(classFileName)) {
-      if (classStream == null) {
-        throw new IllegalStateException("Could not find class file: " + classFileName);
+    private static Object defaultValue(Class<?> type) {
+      try {
+        return UNSAFE.allocateInstance(type);
+      } catch (InstantiationException e) {
+        throw new AssertionError(e);
       }
-      classModel = ClassFile.of().parse(classStream.readAllBytes());
-    } catch (IOException e) {
-      throw new IllegalStateException("Error reading class file for " + elementType.getName(), e);
     }
-
-    var visibleAnnotations = classModel.findAttribute(Attributes.runtimeVisibleAnnotations());
-    if (visibleAnnotations.isPresent()) {
-      var annotations = visibleAnnotations.orElseThrow();
-      return annotations.annotations().stream()
-          .anyMatch(
-              annotation ->
-                  LOOSELY_CONSISTENT_VALUE_DESCRIPTOR.equals(annotation.className().stringValue()));
-    }
-    return false;
   }
+
+  public static final int NON_FLAT = 1;
+  public static final int NON_ATOMIC = 2;
+  public static final int NON_NULL = 4;
+  public static final int FLAT = 0;
+  private static final int NON_ATOMIC_NON_NULL = NON_ATOMIC | NON_NULL;
 
   private E[] values;
   private int size;
 
-  @SuppressWarnings("unchecked")
-  public GenericFlatList(Class<? extends E> elementType, int capacity) {
-    if (VALUE_CLASS_AVAILABLE) {
-      if (INFO_VALUE != null) {
-        var classInfo = INFO_VALUE.get(elementType);
-        values = (E[]) (classInfo.isAtomic ?
-            ValueClass.newNullRestrictedAtomicArray(elementType, capacity, classInfo.defaultValue) :
-            ValueClass.newNullRestrictedNonAtomicArray(elementType, capacity, classInfo.defaultValue));
-        assert ValueClass.isFlatArray(values);
-        return;
-      }
-      values = (E[]) ValueClass.newNullableAtomicArray(elementType, capacity);
-      assert ValueClass.isFlatArray(values);
-      return;
+  private static void checkFlat(Object[] array) {
+    if (!ValueClass.isFlatArray(array)) {
+      throw new IllegalStateException("array is not a flat array");
     }
-    values = (E[]) Array.newInstance(elementType, capacity);
+  }
+
+  @SuppressWarnings("unchecked")
+  public GenericFlatList(Class<? extends E> elementType, int properties, int capacity) {
+    if (!elementType.isValue()) {
+      throw new IllegalArgumentException("Element type must be a value type");
+    }
+    values = (E[]) switch (properties) {
+      case FLAT -> {
+        var values = ValueClass.newNullableAtomicArray(elementType, capacity);
+        checkFlat(values);
+        yield values;
+      }
+      case NON_FLAT -> Array.newInstance(elementType, capacity);
+      case NON_NULL -> {
+        var defaultValue = DEFAULT_VALUE.get(elementType);
+        var values =  ValueClass.newNullRestrictedAtomicArray(elementType, capacity, defaultValue);
+        checkFlat(values);
+        yield values;
+      }
+      case NON_ATOMIC_NON_NULL -> {
+        var defaultValue = DEFAULT_VALUE.get(elementType);
+        var values =  ValueClass.newNullRestrictedNonAtomicArray(elementType, capacity, defaultValue);
+        checkFlat(values);
+        yield values;
+      }
+      default -> throw new IllegalArgumentException("Unknown properties: " + properties);
+    };
+  }
+
+  public GenericFlatList(Class<? extends E> valueClass, int properties) {
+    this(valueClass, properties, 16);
   }
 
   public GenericFlatList(Class<? extends E> valueClass) {
-    this(valueClass, 16);
+    this(valueClass, FLAT, 16);
   }
 
   @Override
@@ -120,47 +92,33 @@ public final class GenericFlatList<E> extends AbstractList<E> {
   @SuppressWarnings("unchecked")
   private void resize() {
     var newCapacity = Math.max(16, values.length << 1);
-    if (VALUE_CLASS_AVAILABLE) {
-      if (INFO_VALUE != null) {
-        var componentType = values.getClass().getComponentType();
-        var defaultValue = INFO_VALUE.get(componentType).defaultValue;
-        var newArray = (E[]) (ValueClass.isAtomicArray(values) ?
-            ValueClass.newNullRestrictedAtomicArray(componentType, newCapacity, defaultValue) :
-            ValueClass.newNullRestrictedNonAtomicArray(componentType, newCapacity, defaultValue));
-        System.arraycopy(values, 0, newArray, 0, values.length);
-        values = newArray;
-        return;
-      }
-      values = (E[]) ValueClass.copyOfSpecialArray(values, 0, newCapacity);
+    if (!ValueClass.isNullRestrictedArray(values)) {
+      values = Arrays.copyOf(values, newCapacity);
       return;
     }
-    values = Arrays.copyOf(values, newCapacity);
+    var componentType = values.getClass().getComponentType();
+    var defaultValue = DEFAULT_VALUE.get(componentType);
+    if (ValueClass.isAtomicArray(values)) {
+      var newArray = ValueClass.newNullRestrictedAtomicArray(componentType, newCapacity, defaultValue);
+      System.arraycopy(values, 0, newArray, 0, values.length);
+      values = (E[]) newArray;
+      return;
+    }
+    var newArray = ValueClass.newNullRestrictedNonAtomicArray(componentType, newCapacity, defaultValue);
+    System.arraycopy(values, 0, newArray, 0, values.length);
+    values = (E[]) newArray;
   }
-
-  /*private void expandToNullableArray() {
-    var valueClass = values.getClass().getComponentType();
-    @SuppressWarnings("unchecked")
-    var newArray = (E[]) ValueClass.newNullableAtomicArray(valueClass, values.length);
-    System.arraycopy(values, 0, newArray, 0, size);
-    values = newArray;
-  }*/
 
   @Override
   public boolean add(E element) {
     if (size == values.length) {
       resize();
     }
-    /*if (NULL_RESTRICTED_ARRAY_AVAILABLE && element == null && ValueClass.isNullRestrictedArray(values)) {
-      expandToNullableArray();
-    }*/
     values[size++] = element;
     return true;
   }
 
   public boolean isFlat() {
-    if (VALUE_CLASS_AVAILABLE) {
-      return ValueClass.isFlatArray(values);
-    }
-    return false;
+    return ValueClass.isFlatArray(values);
   }
 }

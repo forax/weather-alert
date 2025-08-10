@@ -7,10 +7,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static util.FlatListFactory.NON_ATOMIC;
+import static util.FlatListFactory.NON_NULL;
 
 import java.util.NoSuchElementException;
 
-public final class FlatListTest {
+public final class FlatListFactoryTest {
 
   // Test value record for testing purposes
   private value record TestValue(String data) {}
@@ -21,9 +23,9 @@ public final class FlatListTest {
   @Test
   @DisplayName("Should create empty ValueList with value class")
   public void testConstructorWithValueClass() {
-    var list = FlatList.create(TestValue.class);
+    var list = FlatListFactory.create(TestValue.class);
 
-    assertTrue(list.isFlat());
+    assertTrue(FlatListFactory.isFlat(list));
     assertEquals(0, list.size());
     assertTrue(list.isEmpty());
   }
@@ -32,20 +34,20 @@ public final class FlatListTest {
   @DisplayName("Should throw IllegalArgumentException for non-value class")
   public void testConstructorWithNonValueClass() {
     assertThrows(IllegalArgumentException.class,
-        () -> new GenericFlatList<RegularClass>(RegularClass.class));
+        () -> FlatListFactory.create(RegularClass.class));
   }
 
   @Test
   @DisplayName("Should throw NullPointerException for null class")
   public void testConstructorWithNullClass() {
     assertThrows(NullPointerException.class,
-        () -> FlatList.create(null));
+        () -> FlatListFactory.create(null));
   }
 
   @Test
   @DisplayName("Should add single element and increase size")
   public void testAddSingleElement() {
-    var list = FlatList.create(TestValue.class);
+    var list = FlatListFactory.create(TestValue.class);
     var element = new TestValue("test1");
 
     var result = list.add(element);
@@ -59,7 +61,7 @@ public final class FlatListTest {
   @Test
   @DisplayName("Should add multiple elements sequentially")
   public void testAddMultipleElements() {
-    var list = FlatList.create(TestValue.class);
+    var list = FlatListFactory.create(TestValue.class);
     var element1 = new TestValue("test1");
     var element2 = new TestValue("test2");
     var element3 = new TestValue("test3");
@@ -78,7 +80,7 @@ public final class FlatListTest {
   @Disabled
   @DisplayName("Should handle adding null elements")
   public void testAddNullElement() {
-    var list = FlatList.create(TestValue.class);
+    var list = FlatListFactory.create(TestValue.class);
 
     var result = list.add(null);
 
@@ -90,7 +92,7 @@ public final class FlatListTest {
   @Test
   @DisplayName("Should expand capacity when needed")
   public void testCapacityExpansion() {
-    var list = FlatList.create(TestValue.class);
+    var list = FlatListFactory.create(TestValue.class);
 
     // Add more than initial capacity to trigger expansion
     for (int i = 0; i < 20; i++) {
@@ -106,7 +108,7 @@ public final class FlatListTest {
   @Test
   @DisplayName("Should get element at valid index")
   public void testGetValidIndex() {
-    var list = FlatList.create(TestValue.class);
+    var list = FlatListFactory.create(TestValue.class);
     var element = new TestValue("test");
     list.add(element);
 
@@ -118,7 +120,7 @@ public final class FlatListTest {
   @Test
   @DisplayName("Should throw IndexOutOfBoundsException for negative index")
   public void testGetNegativeIndex() {
-    var list = FlatList.create(TestValue.class);
+    var list = FlatListFactory.create(TestValue.class);
     list.add(new TestValue("test"));
 
     assertThrows(IndexOutOfBoundsException.class, () -> list.get(-1));
@@ -127,7 +129,7 @@ public final class FlatListTest {
   @Test
   @DisplayName("Should throw IndexOutOfBoundsException for index equal to size")
   public void testGetIndexEqualToSize() {
-    var list = FlatList.create(TestValue.class);
+    var list = FlatListFactory.create(TestValue.class);
     list.add(new TestValue("test"));
 
     assertThrows(IndexOutOfBoundsException.class, () -> list.get(1));
@@ -136,7 +138,7 @@ public final class FlatListTest {
   @Test
   @DisplayName("Should throw IndexOutOfBoundsException for index greater than size")
   public void testGetIndexGreaterThanSize() {
-    var list = FlatList.create(TestValue.class);
+    var list = FlatListFactory.create(TestValue.class);
     list.add(new TestValue("test"));
 
     assertThrows(IndexOutOfBoundsException.class, () -> list.get(5));
@@ -145,7 +147,7 @@ public final class FlatListTest {
   @Test
   @DisplayName("Should throw IndexOutOfBoundsException when accessing empty list")
   public void testGetFromEmptyList() {
-    var list = FlatList.create(TestValue.class);
+    var list = FlatListFactory.create(TestValue.class);
 
     assertThrows(IndexOutOfBoundsException.class, () -> list.get(0));
   }
@@ -153,7 +155,7 @@ public final class FlatListTest {
   @Test
   @DisplayName("Should return correct size after multiple operations")
   public void testSizeConsistency() {
-    var list = FlatList.create(TestValue.class);
+    var list = FlatListFactory.create(TestValue.class);
 
     assertEquals(0, list.size());
 
@@ -170,7 +172,7 @@ public final class FlatListTest {
   @Test
   @DisplayName("Should handle list with 1 element correctly")
   public void testListSizeOne() {
-    var list = FlatList.create(TestValue.class);
+    var list = FlatListFactory.create(TestValue.class);
 
     list.add(new TestValue("item0"));
 
@@ -181,7 +183,7 @@ public final class FlatListTest {
   @Test
   @DisplayName("Should handle list with 5 elements correctly")
   public void testListSizeFive() {
-    var list = FlatList.create(TestValue.class);
+    var list = FlatListFactory.create(TestValue.class);
 
     for (int i = 0; i < 5; i++) {
       list.add(new TestValue("item" + i));
@@ -197,7 +199,7 @@ public final class FlatListTest {
   @Test
   @DisplayName("Should handle list with 16 elements correctly")
   public void testListSizeSixteen() {
-    var list = FlatList.create(TestValue.class);
+    var list = FlatListFactory.create(TestValue.class);
 
     for (int i = 0; i < 16; i++) {
       list.add(new TestValue("item" + i));
@@ -213,7 +215,7 @@ public final class FlatListTest {
   @Test
   @DisplayName("Should handle list with 17 elements correctly")
   public void testListSizeSeventeen() {
-    var list = FlatList.create(TestValue.class);
+    var list = FlatListFactory.create(TestValue.class);
 
     for (int i = 0; i < 17; i++) {
       list.add(new TestValue("item" + i));
@@ -229,7 +231,7 @@ public final class FlatListTest {
   @Test
   @DisplayName("Should handle list with 32 elements correctly")
   public void testListSizeThirtyTwo() {
-    var list = FlatList.create(TestValue.class);
+    var list = FlatListFactory.create(TestValue.class);
 
     for (int i = 0; i < 32; i++) {
       list.add(new TestValue("item" + i));
@@ -245,7 +247,7 @@ public final class FlatListTest {
   @Test
   @DisplayName("Should handle list with 100 elements correctly")
   public void testListSizeOneHundred() {
-    var list = FlatList.create(TestValue.class);
+    var list = FlatListFactory.create(TestValue.class);
 
     for (int i = 0; i < 100; i++) {
       list.add(new TestValue("item" + i));
@@ -261,7 +263,7 @@ public final class FlatListTest {
   @Test
   @DisplayName("Should maintain order of added elements")
   public void testElementOrder() {
-    var list = FlatList.create(TestValue.class);
+    var list = FlatListFactory.create(TestValue.class);
     var elements = new TestValue[] {
         new TestValue("first"),
         new TestValue("second"),
@@ -281,7 +283,7 @@ public final class FlatListTest {
   @Test
   @DisplayName("Should work with inherited List methods")
   public void testInheritedListMethods() {
-    var list = FlatList.create(TestValue.class);
+    var list = FlatListFactory.create(TestValue.class);
     var element1 = new TestValue("test1");
     var element2 = new TestValue("test2");
 
@@ -302,7 +304,7 @@ public final class FlatListTest {
   @Test
   @DisplayName("Should handle edge case of exactly 16 elements")
   public void testExactly16Elements() {
-    var list = FlatList.create(TestValue.class);
+    var list = FlatListFactory.create(TestValue.class);
 
     // Add exactly 16 elements (initial expansion threshold)
     for (int i = 0; i < 16; i++) {
@@ -324,7 +326,7 @@ public final class FlatListTest {
   @Test
   @DisplayName("Should support iterator from AbstractList")
   public void testIterator() {
-    var list = FlatList.create(TestValue.class);
+    var list = FlatListFactory.create(TestValue.class);
     var element1 = new TestValue("test1");
     var element2 = new TestValue("test2");
 
@@ -344,7 +346,7 @@ public final class FlatListTest {
   @Test
   @DisplayName("Should support enhanced for loop")
   public void testEnhancedForLoop() {
-    var list = FlatList.create(TestValue.class);
+    var list = FlatListFactory.create(TestValue.class);
     var expectedData = new String[]{"first", "second", "third"};
 
     for (var data : expectedData) {
@@ -362,7 +364,7 @@ public final class FlatListTest {
   @Test
   @DisplayName("Should handle large number of elements efficiently")
   public void testLargeScaleOperations() {
-    var list = FlatList.create(TestValue.class);
+    var list = FlatListFactory.create(TestValue.class);
     
     for (int i = 0; i < 1_000_000; i++) {
         list.add(new TestValue("element" + i));
@@ -381,8 +383,8 @@ public final class FlatListTest {
   public void testEmptyValueClass() {
     value record EmptyValue() {}
     
-    var emptyValueList = FlatList.create(EmptyValue.class);
-    assertTrue(emptyValueList.isFlat());
+    var emptyValueList = FlatListFactory.create(EmptyValue.class);
+    assertTrue(FlatListFactory.isFlat(emptyValueList));
 
     emptyValueList.add(new EmptyValue());
     
@@ -396,8 +398,8 @@ public final class FlatListTest {
     @LooselyConsistentValue
     value record CompositeValue(String name, int id, boolean flag) {}
 
-    var compositeList = FlatList.create(CompositeValue.class);
-    assertTrue(compositeList.isFlat());
+    var compositeList = FlatListFactory.create(CompositeValue.class, NON_NULL | NON_ATOMIC);
+    assertTrue(FlatListFactory.isFlat(compositeList));
 
     compositeList.add(new CompositeValue("test", 42, true));
 
@@ -411,8 +413,8 @@ public final class FlatListTest {
     value record ByteValue(byte val1) {}
     value record TwoByteValue(ByteValue v1, ByteValue v2) {}
 
-    var twoByteList = FlatList.create(TwoByteValue.class);
-    assertTrue(twoByteList.isFlat());
+    var twoByteList = FlatListFactory.create(TwoByteValue.class);
+    assertTrue(FlatListFactory.isFlat(twoByteList));
 
     twoByteList.add(new TwoByteValue(new ByteValue((byte) 1), new ByteValue((byte) 2)));
 

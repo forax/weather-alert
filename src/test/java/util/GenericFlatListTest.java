@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static util.GenericFlatList.*;
 
 import java.util.NoSuchElementException;
 
@@ -22,7 +23,7 @@ public final class GenericFlatListTest {
   @Test
   @DisplayName("Should create empty ValueList with value class")
   public void testConstructorWithValueClass() {
-    var list = new GenericFlatList<>(TestValue.class);
+    var list = new GenericFlatList<>(TestValue.class, FLAT);
 
     assertTrue(list.isFlat());
     assertEquals(0, list.size());
@@ -33,20 +34,20 @@ public final class GenericFlatListTest {
   @DisplayName("Should throw IllegalArgumentException for non-value class")
   public void testConstructorWithNonValueClass() {
     assertThrows(IllegalArgumentException.class,
-        () -> new GenericFlatList<RegularClass>(RegularClass.class));
+        () -> new GenericFlatList<RegularClass>(RegularClass.class, FLAT));
   }
 
   @Test
   @DisplayName("Should throw NullPointerException for null class")
   public void testConstructorWithNullClass() {
     assertThrows(NullPointerException.class,
-        () -> new GenericFlatList<>(null));
+        () -> new GenericFlatList<>(null, FLAT));
   }
 
   @Test
   @DisplayName("Should add single element and increase size")
   public void testAddSingleElement() {
-    var list = new GenericFlatList<>(TestValue.class);
+    var list = new GenericFlatList<>(TestValue.class, FLAT);
     var element = new TestValue("test1");
 
     var result = list.add(element);
@@ -60,7 +61,7 @@ public final class GenericFlatListTest {
   @Test
   @DisplayName("Should add multiple elements sequentially")
   public void testAddMultipleElements() {
-    var list = new GenericFlatList<>(TestValue.class);
+    var list = new GenericFlatList<>(TestValue.class, FLAT);
     var element1 = new TestValue("test1");
     var element2 = new TestValue("test2");
     var element3 = new TestValue("test3");
@@ -76,22 +77,17 @@ public final class GenericFlatListTest {
   }
 
   @Test
-  @Disabled
-  @DisplayName("Should handle adding null elements")
+  @DisplayName("Should not handle adding null elements")
   public void testAddNullElement() {
-    var list = new GenericFlatList<>(TestValue.class);
+    var list = new GenericFlatList<>(TestValue.class, NON_NULL);
 
-    var result = list.add(null);
-
-    Assertions.assertTrue(result);
-    assertEquals(1, list.size());
-    assertNull(list.get(0));
+    assertThrows(NullPointerException.class, () -> list.add(null));
   }
 
   @Test
   @DisplayName("Should expand capacity when needed")
   public void testCapacityExpansion() {
-    var list = new GenericFlatList<>(TestValue.class);
+    var list = new GenericFlatList<>(TestValue.class, FLAT);
 
     // Add more than initial capacity to trigger expansion
     for (int i = 0; i < 20; i++) {
@@ -107,7 +103,7 @@ public final class GenericFlatListTest {
   @Test
   @DisplayName("Should get element at valid index")
   public void testGetValidIndex() {
-    var list = new GenericFlatList<>(TestValue.class);
+    var list = new GenericFlatList<>(TestValue.class, FLAT);
     var element = new TestValue("test");
     list.add(element);
 
@@ -119,7 +115,7 @@ public final class GenericFlatListTest {
   @Test
   @DisplayName("Should throw IndexOutOfBoundsException for negative index")
   public void testGetNegativeIndex() {
-    var list = new GenericFlatList<>(TestValue.class);
+    var list = new GenericFlatList<>(TestValue.class, FLAT);
     list.add(new TestValue("test"));
 
     assertThrows(IndexOutOfBoundsException.class, () -> list.get(-1));
@@ -128,7 +124,7 @@ public final class GenericFlatListTest {
   @Test
   @DisplayName("Should throw IndexOutOfBoundsException for index equal to size")
   public void testGetIndexEqualToSize() {
-    var list = new GenericFlatList<>(TestValue.class);
+    var list = new GenericFlatList<>(TestValue.class, FLAT);
     list.add(new TestValue("test"));
 
     assertThrows(IndexOutOfBoundsException.class, () -> list.get(1));
@@ -137,7 +133,7 @@ public final class GenericFlatListTest {
   @Test
   @DisplayName("Should throw IndexOutOfBoundsException for index greater than size")
   public void testGetIndexGreaterThanSize() {
-    var list = new GenericFlatList<>(TestValue.class);
+    var list = new GenericFlatList<>(TestValue.class, FLAT);
     list.add(new TestValue("test"));
 
     assertThrows(IndexOutOfBoundsException.class, () -> list.get(5));
@@ -146,7 +142,7 @@ public final class GenericFlatListTest {
   @Test
   @DisplayName("Should throw IndexOutOfBoundsException when accessing empty list")
   public void testGetFromEmptyList() {
-    var list = new GenericFlatList<>(TestValue.class);
+    var list = new GenericFlatList<>(TestValue.class, FLAT);
 
     assertThrows(IndexOutOfBoundsException.class, () -> list.get(0));
   }
@@ -154,7 +150,7 @@ public final class GenericFlatListTest {
   @Test
   @DisplayName("Should return correct size after multiple operations")
   public void testSizeConsistency() {
-    var list = new GenericFlatList<>(TestValue.class);
+    var list = new GenericFlatList<>(TestValue.class, FLAT);
 
     assertEquals(0, list.size());
 
@@ -171,7 +167,7 @@ public final class GenericFlatListTest {
   @Test
   @DisplayName("Should handle list with 1 element correctly")
   public void testListSizeOne() {
-    var list = new GenericFlatList<>(TestValue.class);
+    var list = new GenericFlatList<>(TestValue.class, FLAT);
 
     list.add(new TestValue("item0"));
 
@@ -182,7 +178,7 @@ public final class GenericFlatListTest {
   @Test
   @DisplayName("Should handle list with 5 elements correctly")
   public void testListSizeFive() {
-    var list = new GenericFlatList<>(TestValue.class);
+    var list = new GenericFlatList<>(TestValue.class, FLAT);
 
     for (int i = 0; i < 5; i++) {
       list.add(new TestValue("item" + i));
@@ -198,7 +194,7 @@ public final class GenericFlatListTest {
   @Test
   @DisplayName("Should handle list with 16 elements correctly")
   public void testListSizeSixteen() {
-    var list = new GenericFlatList<>(TestValue.class);
+    var list = new GenericFlatList<>(TestValue.class, FLAT);
 
     for (int i = 0; i < 16; i++) {
       list.add(new TestValue("item" + i));
@@ -214,7 +210,7 @@ public final class GenericFlatListTest {
   @Test
   @DisplayName("Should handle list with 17 elements correctly")
   public void testListSizeSeventeen() {
-    var list = new GenericFlatList<>(TestValue.class);
+    var list = new GenericFlatList<>(TestValue.class, FLAT);
 
     for (int i = 0; i < 17; i++) {
       list.add(new TestValue("item" + i));
@@ -230,7 +226,7 @@ public final class GenericFlatListTest {
   @Test
   @DisplayName("Should handle list with 32 elements correctly")
   public void testListSizeThirtyTwo() {
-    var list = new GenericFlatList<>(TestValue.class);
+    var list = new GenericFlatList<>(TestValue.class, FLAT);
 
     for (int i = 0; i < 32; i++) {
       list.add(new TestValue("item" + i));
@@ -246,7 +242,7 @@ public final class GenericFlatListTest {
   @Test
   @DisplayName("Should handle list with 100 elements correctly")
   public void testListSizeOneHundred() {
-    var list = new GenericFlatList<>(TestValue.class);
+    var list = new GenericFlatList<>(TestValue.class, FLAT);
 
     for (int i = 0; i < 100; i++) {
       list.add(new TestValue("item" + i));
@@ -262,7 +258,7 @@ public final class GenericFlatListTest {
   @Test
   @DisplayName("Should maintain order of added elements")
   public void testElementOrder() {
-    var list = new GenericFlatList<>(TestValue.class);
+    var list = new GenericFlatList<>(TestValue.class, FLAT);
     var elements = new TestValue[] {
         new TestValue("first"),
         new TestValue("second"),
@@ -282,7 +278,7 @@ public final class GenericFlatListTest {
   @Test
   @DisplayName("Should work with inherited List methods")
   public void testInheritedListMethods() {
-    var list = new GenericFlatList<>(TestValue.class);
+    var list = new GenericFlatList<>(TestValue.class, FLAT);
     var element1 = new TestValue("test1");
     var element2 = new TestValue("test2");
 
@@ -303,7 +299,7 @@ public final class GenericFlatListTest {
   @Test
   @DisplayName("Should handle edge case of exactly 16 elements")
   public void testExactly16Elements() {
-    var list = new GenericFlatList<>(TestValue.class);
+    var list = new GenericFlatList<>(TestValue.class, FLAT);
 
     // Add exactly 16 elements (initial expansion threshold)
     for (int i = 0; i < 16; i++) {
@@ -325,7 +321,7 @@ public final class GenericFlatListTest {
   @Test
   @DisplayName("Should support iterator from AbstractList")
   public void testIterator() {
-    var list = new GenericFlatList<>(TestValue.class);
+    var list = new GenericFlatList<>(TestValue.class, FLAT);
     var element1 = new TestValue("test1");
     var element2 = new TestValue("test2");
 
@@ -345,7 +341,7 @@ public final class GenericFlatListTest {
   @Test
   @DisplayName("Should support enhanced for loop")
   public void testEnhancedForLoop() {
-    var list = new GenericFlatList<>(TestValue.class);
+    var list = new GenericFlatList<>(TestValue.class, FLAT);
     var expectedData = new String[]{"first", "second", "third"};
 
     for (var data : expectedData) {
@@ -363,7 +359,7 @@ public final class GenericFlatListTest {
   @Test
   @DisplayName("Should handle large number of elements efficiently")
   public void testLargeScaleOperations() {
-    var list = new GenericFlatList<>(TestValue.class);
+    var list = new GenericFlatList<>(TestValue.class, FLAT);
     
     for (int i = 0; i < 1_000_000; i++) {
         list.add(new TestValue("element" + i));
@@ -382,7 +378,7 @@ public final class GenericFlatListTest {
   public void testEmptyValueClass() {
     value record EmptyValue() {}
     
-    var emptyValueList = new GenericFlatList<>(EmptyValue.class);
+    var emptyValueList = new GenericFlatList<>(EmptyValue.class, FLAT);
     assertTrue(emptyValueList.isFlat());
 
     emptyValueList.add(new EmptyValue());
@@ -397,7 +393,7 @@ public final class GenericFlatListTest {
     @LooselyConsistentValue
     value record CompositeValue(String name, int id, boolean flag) {}
 
-    var compositeList = new GenericFlatList<>(CompositeValue.class);
+    var compositeList = new GenericFlatList<>(CompositeValue.class, NON_NULL | NON_ATOMIC);
     assertTrue(compositeList.isFlat());
 
     compositeList.add(new CompositeValue("test", 42, true));
@@ -412,7 +408,7 @@ public final class GenericFlatListTest {
     value record ByteValue(byte val1) {}
     value record TwoByteValue(ByteValue v1, ByteValue v2) {}
 
-    var twoByteList = new GenericFlatList<>(TwoByteValue.class);
+    var twoByteList = new GenericFlatList<>(TwoByteValue.class, FLAT);
     assertTrue(twoByteList.isFlat());
 
     twoByteList.add(new TwoByteValue(new ByteValue((byte) 1), new ByteValue((byte) 2)));

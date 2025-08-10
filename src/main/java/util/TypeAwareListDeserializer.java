@@ -21,8 +21,8 @@ public final class TypeAwareListDeserializer extends StdDeserializer<List<?>> im
   private static List<Object> createList(JavaType contentType) {
     var rawClass = contentType.getRawClass();
     if (rawClass.isValue()) {
-      //return new GenericValueList<>(rawClass);
-      return FlatList.create(rawClass);
+      //return FlatListFactory.create(rawClass, FlatListFactory.FLAT);
+      return FlatListFactory.create(rawClass, FlatListFactory.NON_NULL);
     }
     return new ArrayList<>();
   }

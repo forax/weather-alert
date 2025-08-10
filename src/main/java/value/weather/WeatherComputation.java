@@ -7,7 +7,7 @@ import java.util.stream.IntStream;
 
 import jdk.internal.vm.annotation.LooselyConsistentValue;
 import jdk.internal.vm.annotation.NullRestricted;
-import util.FlatList;
+import util.FlatListFactory;
 import value.weather.WeatherService.*;
 
 public class WeatherComputation {
@@ -42,11 +42,6 @@ public class WeatherComputation {
     return result;
   }
 
-  //private static final AggregateList.Factory<WeatherData> AGGREGATE_LIST_FACTORY =
-  //    AggregateList.factory(MethodHandles.lookup(), WeatherData.class);
-  private static final FlatList.Factory<WeatherData> VALUE_LIST_FACTORY =
-      FlatList.factory(MethodHandles.lookup(), WeatherData.class);
-
   //public value record WeatherData(Temperature temperature, Windspeed windspeed, Precipitation precipitation) { }
   @LooselyConsistentValue
   public value record WeatherData(@NullRestricted Temperature temperature, @NullRestricted Windspeed windspeed, @NullRestricted Precipitation precipitation) { }
@@ -65,7 +60,7 @@ public class WeatherComputation {
             precipitations.get(i)))
         //.toList();
         //.collect(Collectors.toCollection(() -> new GenericValueList<>(WeatherData.class, precipitations.size())));
-        .collect(Collectors.toCollection(() -> VALUE_LIST_FACTORY.create(precipitations.size())));
+        .collect(Collectors.toCollection(() -> FlatListFactory.create(WeatherData.class)));
   }
 
   public static WeatherResult computeWeatherData(List<WeatherData> weatherDataList) {
