@@ -119,14 +119,13 @@ see methods `computeWeatherData()` and `computeHourlyData()` in
 
 ### **Collection Behavior Limitations**
 
-**Both Approaches Share This Limitation:**
 - Generic collections (like `java.util.List<T>`) don't benefit from value class optimizations
 - Type erasure removes runtime type information
-- No flattening or performance improvements in generic containers
+- No flattening or performance improvements in generic containers / collections
 
-To get better performance, need specialized collections:
+To get better performance, you need specialized collections that are aware of the value class:
 - Requires special handling (like [TypeAwareListDeserializer](src/main/java/util/TypeAwareListDeserializer.java) for Jackson)
-- Must replace `Stream.toList()` with `collect(Collectors.toCollection())` for better control,
+- Require changing the code, e.g. replacing `Stream.toList()` with `collect(Collectors.toCollection())` for better control,
   see [WeatherComputation.toWeatherData()](src/main/java/identity/weather/WeatherComputation.java)
 
 
