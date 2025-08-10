@@ -13,9 +13,13 @@ class WeatherExample {
     // Ten years, 2025-2015
     var endDate = LocalDate.parse("2025-01-01");
     var startDate = endDate.minusYears(20);
-
     var hourlyData = WeatherService.getHourlyData(paris, startDate, endDate);
+
+    // 1
     var weatherData = WeatherComputation.toWeatherData(hourlyData);
     System.out.println(WeatherComputation.computeWeatherData(weatherData));
+
+    // 2
+    System.out.println(WeatherComputation.computeHourlyData(hourlyData));
   }
 }
