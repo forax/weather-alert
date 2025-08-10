@@ -46,6 +46,12 @@ public final class GenericFlatList<E> extends AbstractList<E> {
     if (!elementType.isValue()) {
       throw new IllegalArgumentException("Element type must be a value type");
     }
+    if (properties < NON_FLAT || properties > NON_ATOMIC_FLAT)  {
+      throw new IllegalArgumentException("Invalid properties: " + properties);
+    }
+    if (initialCapacity < 1) {
+      throw new IllegalArgumentException("Invalid initialCapacity: " + initialCapacity);
+    }
     values = (E[]) switch (properties) {
       case NON_FLAT -> Array.newInstance(elementType, initialCapacity);
       case FLAT -> {
