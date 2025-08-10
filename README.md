@@ -17,55 +17,135 @@ There are 3 versions:
    - [value WeatherService](src/main/java/value/weather/WeatherService.java)
    - [value WeatherComputation](src/main/java/value/weather/WeatherComputation.java)
 
-
-### Declaring a simple value class
-
-You can use the keyword `value` in front of a `class` or a `record`,
-see [WeatherService](src/main/java/value/weather/WeatherService.java).
-
-Allocating an instance (with `new`) of a value class does not use memory on the heap (scalarization).
-Declaring a field typed by a value class embeds the values of the fields of the value class inside the container class
-(heap flattening).
+The primitive version is just for performance comparison.
 
 
-### Builder and Value Builder
+## Key Differences Between Identity and Value Classes
 
-Value classes let you right functional builders that are
-- less complex (no mutation, having to track states)
-- safer (no code duplication between the constructeur and the setter/with)
+### 1. **Memory Management and Performance**
 
-You can contrast [imperative QueryBuilder](src/main/java/identity/weather/QueryBuilder.java) vs
-[functional QueryBuilder](src/main/java/value/weather/QueryBuilder.java).
+**Identity Classes:**
+- Objects are allocated on the heap with traditional `new` keyword
+- Each object has its own identity and memory location
+- Reference-based equality (objects are equal only if they reference the location in memory)
+- Pointer indirection when accessing nested objects
 
-
-### Computation
-
-Value classes make the code that does computation
-- more readable
-- easier to reuse
-because you can group fields with no fear of performance hiccup.
-
-You can contrast the method `computeWeatherData()` or `computeHourlyData()`
-in [identity based WeatherComputation.java](src/main/java/identity/weather/WeatherComputation.java)
-and [value based](src/main/java/value/weather/WeatherComputation.java).
+**Value Classes:**
+- No object identity! Equality is based on content/values
+- Unmodifiability (there is no location in memory, thus the object is unmodifiable)
+- Direct memory access without pointer indirection
+- Reduced garbage collection pressure
 
 
-### Collection erasure vs value class
+No identity enables two optimizations:
+- **Scalarization**: Instances don't use heap memory when allocated with `new` (but CPU registers)
+- **Heap Flattening**: Fields of value classes are embedded directly inside container classes
 
-All is not rosy in the value world, a `java.util.List` of a value class behave exactly the same way
-a list of identity class, no better performance, no flattening. It's because the type argument
-of generic types (parametrized types) is removed by the compiler (erasure),
-thus not present at runtime. A `java.util.List` does not know at runtime the class of its elements.
-
-Sadly it means that we have to propagate the type at runtime, one way or another.
-For Jackson, we need a deserializer which propagate the type argument,
-see [TypeAwareListDeserializer](src/main/java/util/TypeAwareListDeserializer.java).
-For the method `toList()` of a Stream, we need to replace it with `collect(Collectors.toCollection())`
-so as a user, you control how the collection is initialized,
-see the method [WeatherComputation.toWeatherData()](src/main/java/identity/weather/WeatherComputation.java).
+The value classes tries to be the best of both worlds (primitive types and identity classes).
 
 
-## Using IntelliJ IDEA
+### 2. **Declaration Syntax**
+
+**Identity Classes:**
+```java
+public class WeatherData {
+    // Traditional class declaration
+}
+```
+
+
+**Value Classes:**
+
+A value class is declared with the `value` keyword.
+
+```java
+public value class WeatherData {
+    // Uses 'value' keyword
+}
+// or
+public value record WeatherData(...) {
+    // Can also be applied to records
+}
+```
+
+At runtime, there are very few differences:
+- The class is implicitly marked as `final`
+- The fields are implicitly marked as `final` and `strict` (initialized before the call to the super constructor)
+- the operator == checks the field values (component wise) instead of the reference
+- System.identityHashCode() returns a hash computed using the field values
+- synchonized(value) throw an IdentityException because there is no memory location associated to the object.
+- new WeakReference(value) throws an IdentityException because the instance is not accessible through a pointer.
+
+
+## Different use cases
+
+### 1. **Builder Pattern Implementation**
+
+**Identity Classes (Imperative Builders):**
+- More complex due to mutation and state tracking
+- Need to manage intermediate states
+- Risk of code duplication between constructor and setters (withers)
+
+see [QueryBuilder](src/main/java/identity/weather/QueryBuilder.java)
+
+**Value Classes (Functional Builders):**
+- Simpler implementation due to immutability
+- No state tracking needed
+- Safer with no code duplication
+- Purely functional approach
+
+see [ValueQueryBuilder](src/main/java/value/weather/ValueQueryBuilder.java)
+
+
+### 2. **Computational Code Benefits**
+
+**Identity Classes:**
+- Performance considerations may discourage grouping related fields
+- More verbose code due to manual optimization concerns
+- Potential for scattered data structures
+
+see methods `computeWeatherData()` and `computeHourlyData()` in
+[WeatherComputation](src/main/java/identity/weather/WeatherComputation.java)
+
+**Value Classes:**
+- Can group fields freely without performance penalties
+- More readable and reusable computation code
+- Natural data modeling without artificial performance constraints
+- Methods like `computeWeatherData()` and `computeHourlyData()` become cleaner
+
+see methods `computeWeatherData()` and `computeHourlyData()` in
+[WeatherComputation](src/main/java/value/weather/WeatherComputation.java)
+
+
+### 3. **Collection Behavior Limitations**
+
+**Both Approaches Share This Limitation:**
+- Generic collections (like `java.util.List<T>`) don't benefit from value class optimizations
+- Type erasure removes runtime type information
+- No flattening or performance improvements in generic containers
+
+To get better performance, need specialized collections:
+- Requires special handling (like [TypeAwareListDeserializer](src/main/java/util/TypeAwareListDeserializer.java) for Jackson)
+- Must replace `Stream.toList()` with `collect(Collectors.toCollection())` for better control,
+  see [WeatherComputation.toWeatherData()](src/main/java/identity/weather/WeatherComputation.java)
+
+
+## **Development Philosophy**
+
+**Identity Classes:**
+- Focus on object identity and reference semantics
+- Traditional OOP approach
+- Performance optimizations require careful design considerations
+- Well-established patterns and tooling
+
+**Value Classes:**
+- Focus on data and values rather than identity
+- Functional programming friendly
+- Performance comes naturally through JVM optimizations
+- Experimental feature requiring cutting-edge version of Java and IDE support
+
+
+## **Using IntelliJ IDEA**
 
 Recent versions of IntelliJ have partial support for value types.
 In File > Project Structure, select the "Language Level" to "Experimental Features"
