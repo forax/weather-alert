@@ -79,7 +79,7 @@ public final class GenericFlatListTest {
   @Test
   @DisplayName("Should not handle adding null elements")
   public void testAddNullElement() {
-    var list = new GenericFlatList<>(TestValue.class, NON_NULL);
+    var list = new GenericFlatList<>(TestValue.class, NON_NULL_FLAT);
 
     assertThrows(NullPointerException.class, () -> list.add(null));
   }
@@ -393,7 +393,7 @@ public final class GenericFlatListTest {
     @LooselyConsistentValue
     value record CompositeValue(String name, int id, boolean flag) {}
 
-    var compositeList = new GenericFlatList<>(CompositeValue.class, NON_NULL | NON_ATOMIC);
+    var compositeList = new GenericFlatList<>(CompositeValue.class, NON_ATOMIC_FLAT);
     assertTrue(compositeList.isFlat());
 
     compositeList.add(new CompositeValue("test", 42, true));

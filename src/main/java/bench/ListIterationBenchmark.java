@@ -56,12 +56,12 @@ public class ListIterationBenchmark {
 
     genericNonFlatList = new GenericFlatList<>(TestValue.class, GenericFlatList.NON_FLAT, size);
     genericFlatList = new GenericFlatList<>(TestValue.class, GenericFlatList.FLAT, size);
-    genericNonNullFlatList =  new GenericFlatList<>(TestValue.class, GenericFlatList.NON_NULL, size);
+    genericNonNullFlatList =  new GenericFlatList<>(TestValue.class, GenericFlatList.NON_NULL_FLAT, size);
 
     nonFlatList = FlatListFactory.create(TestValue.class, FlatListFactory.NON_FLAT, size);
     flatList = FlatListFactory.create(TestValue.class, FlatListFactory.FLAT, size);
     checkFlat(flatList);
-    nonNonNullFlatList = FlatListFactory.create(TestValue.class, FlatListFactory.NON_NULL, size);
+    nonNonNullFlatList = FlatListFactory.create(TestValue.class, FlatListFactory.NON_NULL_FLAT, size);
     checkFlat(nonNonNullFlatList);
 
     for (var i = 0; i < size; i++) {

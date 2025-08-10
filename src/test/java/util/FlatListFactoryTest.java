@@ -7,8 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static util.FlatListFactory.NON_ATOMIC;
-import static util.FlatListFactory.NON_NULL;
+import static util.FlatListFactory.NON_ATOMIC_FLAT;
 
 import java.util.NoSuchElementException;
 
@@ -398,7 +397,7 @@ public final class FlatListFactoryTest {
     @LooselyConsistentValue
     value record CompositeValue(String name, int id, boolean flag) {}
 
-    var compositeList = FlatListFactory.create(CompositeValue.class, NON_NULL | NON_ATOMIC);
+    var compositeList = FlatListFactory.create(CompositeValue.class, NON_ATOMIC_FLAT);
     assertTrue(FlatListFactory.isFlat(compositeList));
 
     compositeList.add(new CompositeValue("test", 42, true));

@@ -34,11 +34,11 @@ public final class FlatListFactory {
     throw new AssertionError();
   }
 
+
   public static final int NON_FLAT = 1;
-  public static final int NON_ATOMIC = 2;
-  public static final int NON_NULL = 4;
-  public static final int FLAT = 0;
-  private static final int NON_ATOMIC_NON_NULL = NON_ATOMIC | NON_NULL;
+  public static final int FLAT = 2;
+  public static final int NON_NULL_FLAT = 3;
+  public static final int NON_ATOMIC_FLAT = 4;
 
   public static <T> List<T> create(Class<T> elementType) {
     Objects.requireNonNull(elementType);
@@ -100,29 +100,29 @@ public final class FlatListFactory {
 
     public MethodHandle constructor(Class<?> elementType, int properties) {
       return switch (properties) {
-        case FLAT -> {
-          if (flat != null) {
-            yield flat;
-          }
-          yield flat = createConstructor(elementType, FLAT);
-        }
         case NON_FLAT -> {
           if (nonFlat != null) {
             yield nonFlat;
           }
           yield nonFlat = createConstructor(elementType, NON_FLAT);
         }
-        case NON_NULL -> {
+        case FLAT -> {
+          if (flat != null) {
+            yield flat;
+          }
+          yield flat = createConstructor(elementType, FLAT);
+        }
+        case NON_NULL_FLAT -> {
           if (nonNull != null) {
             yield nonNull;
           }
-          yield nonNull = createConstructor(elementType, NON_NULL);
+          yield nonNull = createConstructor(elementType, NON_NULL_FLAT);
         }
-        case NON_ATOMIC_NON_NULL -> {
+        case NON_ATOMIC_FLAT -> {
           if (nonAtomicNonNull != null) {
             yield nonAtomicNonNull;
           }
-          yield nonAtomicNonNull = createConstructor(elementType, NON_ATOMIC_NON_NULL);
+          yield nonAtomicNonNull = createConstructor(elementType, NON_ATOMIC_FLAT);
         }
         default -> throw new IllegalArgumentException("Unknown properties: " + properties);
       };
@@ -148,7 +148,7 @@ public final class FlatListFactory {
   }
 
   private static Object defaultValue(Class<?> elementType, int properties) {
-    if ((properties & NON_NULL) != 0) {
+    if (properties == NON_NULL_FLAT || properties == NON_ATOMIC_FLAT) {
       return DefaultValue.defaultValue(elementType);
     }
     return null;
@@ -389,16 +389,16 @@ public final class FlatListFactory {
   private static Object[] newArray(Specialization specialization, int capacity) {
     // do not use an expression switch here, the generated code is too awful :(
     switch (specialization.properties) {
-      case FLAT -> {
-        return ValueClass.newNullableAtomicArray(specialization.elementType, capacity);
-      }
       case NON_FLAT -> {
         return (Object[]) Array.newInstance(specialization.elementType, capacity);
       }
-      case NON_NULL -> {
+      case FLAT -> {
+        return ValueClass.newNullableAtomicArray(specialization.elementType, capacity);
+      }
+      case NON_NULL_FLAT -> {
         return ValueClass.newNullRestrictedAtomicArray(specialization.elementType, capacity, specialization.defaultValue);
       }
-      case NON_ATOMIC_NON_NULL -> {
+      case NON_ATOMIC_FLAT -> {
         return ValueClass.newNullRestrictedNonAtomicArray(specialization.elementType, capacity, specialization.defaultValue);
       }
       default -> throw new IllegalArgumentException("Unknown properties: " + specialization.properties);
@@ -437,7 +437,7 @@ public final class FlatListFactory {
     System.out.println(stringList);
 
     // Test integer list
-    List<Integer> intList = create(Integer.class, FLAT | NON_NULL);
+    List<Integer> intList = create(Integer.class, NON_NULL_FLAT);
     for(var i = 0; i < 20; i++) {
       intList.add(i);
     }

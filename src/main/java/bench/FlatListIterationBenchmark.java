@@ -1,7 +1,6 @@
 package bench;
 
 import util.FlatListFactory;
-import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Measurement;
@@ -18,11 +17,11 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 // Benchmark                                                    (size)  Mode  Cnt      Score    Error  Units
-// FutureListIterationBenchmark.sumArrayList                     10000  avgt    5   4529,930 ± 18,572  ns/op
-// FutureListIterationBenchmark.sumFlatList                      10000  avgt    5  15152,822 ± 65,175  ns/op
-// FutureListIterationBenchmark.sumNonFlatList                   10000  avgt    5   3308,946 ± 10,198  ns/op
-// FutureListIterationBenchmark.sumNullRestrictedList            10000  avgt    5   2898,576 ± 14,536  ns/op
-// FutureListIterationBenchmark.sumNullRestrictedNonAtomicList   10000  avgt    5   2898,853 ± 10,320  ns/op
+// FlatListIterationBenchmark.sumArrayList                     10000  avgt    5   4529,930 ± 18,572  ns/op
+// FlatListIterationBenchmark.sumFlatList                      10000  avgt    5  15152,822 ± 65,175  ns/op
+// FlatListIterationBenchmark.sumNonFlatList                   10000  avgt    5   3308,946 ± 10,198  ns/op
+// FlatListIterationBenchmark.sumNullRestrictedList            10000  avgt    5   2898,576 ± 14,536  ns/op
+// FlatListIterationBenchmark.sumNullRestrictedNonAtomicList   10000  avgt    5   2898,853 ± 10,320  ns/op
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 @State(Scope.Benchmark)
@@ -32,7 +31,7 @@ import java.util.concurrent.TimeUnit;
     "--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED"})
 @Warmup(iterations = 5, time = 1)
 @Measurement(iterations = 5, time = 1)
-public class FutureListIterationBenchmark {
+public class FlatListIterationBenchmark {
 
   @Param({/*"100", "1000",*/ "10000"})
   private int size;
@@ -41,7 +40,7 @@ public class FutureListIterationBenchmark {
   private List<Integer> nonFlatList;
   private List<Integer> flatList;
   private List<Integer> nullRestrictedList;
-  private List<Integer> nullRestrictedNonAtomicList;
+  private List<Integer> nonAtomicList;
 
   @Setup
   public void setup() {
@@ -53,11 +52,11 @@ public class FutureListIterationBenchmark {
         FlatListFactory.FLAT);
     checkFlat(flatList);
     nullRestrictedList = FlatListFactory.create(Integer.class,
-        FlatListFactory.NON_NULL);
+        FlatListFactory.NON_NULL_FLAT);
     checkFlat(nullRestrictedList);
-    nullRestrictedNonAtomicList = FlatListFactory.create(Integer.class,
-        FlatListFactory.NON_NULL | FlatListFactory.NON_ATOMIC);
-    checkFlat(nullRestrictedNonAtomicList);
+    nonAtomicList = FlatListFactory.create(Integer.class,
+        FlatListFactory.NON_ATOMIC_FLAT);
+    checkFlat(nonAtomicList);
 
     for (var i = 0; i < size; i++) {
       var value = new Integer(i);
@@ -65,7 +64,7 @@ public class FutureListIterationBenchmark {
       nonFlatList.add(value);
       flatList.add(value);
       nullRestrictedList.add(value);
-      nullRestrictedNonAtomicList.add(value);
+      nonAtomicList.add(value);
     }
   }
 
@@ -116,10 +115,10 @@ public class FutureListIterationBenchmark {
   }
 
   //@Benchmark
-  public int sumNullRestrictedNonAtomicList() {
+  public int sumNonAtomicList() {
     var sum = 0;
-    for (var i = 0; i < nullRestrictedNonAtomicList.size(); i++) {
-      var value = nullRestrictedNonAtomicList.get(i);
+    for (var i = 0; i < nonAtomicList.size(); i++) {
+      var value = nonAtomicList.get(i);
       sum += value;
     }
     return sum;

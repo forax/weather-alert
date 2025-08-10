@@ -28,10 +28,9 @@ public final class GenericFlatList<E> extends AbstractList<E> {
   }
 
   public static final int NON_FLAT = 1;
-  public static final int NON_ATOMIC = 2;
-  public static final int NON_NULL = 4;
-  public static final int FLAT = 0;
-  private static final int NON_ATOMIC_NON_NULL = NON_ATOMIC | NON_NULL;
+  public static final int FLAT = 2;
+  public static final int NON_NULL_FLAT = 3;
+  public static final int NON_ATOMIC_FLAT = 4;
 
   private E[] values;
   private int size;
@@ -48,19 +47,19 @@ public final class GenericFlatList<E> extends AbstractList<E> {
       throw new IllegalArgumentException("Element type must be a value type");
     }
     values = (E[]) switch (properties) {
+      case NON_FLAT -> Array.newInstance(elementType, initialCapacity);
       case FLAT -> {
         var values = ValueClass.newNullableAtomicArray(elementType, initialCapacity);
         checkFlat(values);
         yield values;
       }
-      case NON_FLAT -> Array.newInstance(elementType, initialCapacity);
-      case NON_NULL -> {
+      case NON_NULL_FLAT -> {
         var defaultValue = DEFAULT_VALUE.get(elementType);
         var values =  ValueClass.newNullRestrictedAtomicArray(elementType, initialCapacity, defaultValue);
         checkFlat(values);
         yield values;
       }
-      case NON_ATOMIC_NON_NULL -> {
+      case NON_ATOMIC_FLAT -> {
         var defaultValue = DEFAULT_VALUE.get(elementType);
         var values =  ValueClass.newNullRestrictedNonAtomicArray(elementType, initialCapacity, defaultValue);
         checkFlat(values);
