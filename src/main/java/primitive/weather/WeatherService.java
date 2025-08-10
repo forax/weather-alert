@@ -9,8 +9,6 @@ import util.Fetch;
 import java.io.IOException;
 import java.time.LocalDate;
 
-import static util.Fetch.*;
-
 public final class WeatherService {
 
   private static final ObjectReader OBJECT_READER = new ObjectMapper().reader();
@@ -21,7 +19,7 @@ public final class WeatherService {
     var uri = new QueryBuilder(latLong, startDate, endDate).toURI();
     //System.err.println(uri);
 
-    var body = cache(uri, Fetch::fetch);
+    var body = Fetch.cache(uri, Fetch::fetch);
 
     var response = OBJECT_READER.readValue(body, OpenMeteoResponse.class);
     return response.hourly();
