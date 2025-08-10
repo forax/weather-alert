@@ -7,78 +7,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 
 import java.io.IOException;
-import java.io.InterruptedIOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.stream.IntStream;
+
+import static util.Fetch.*;
 
 public final class WeatherService {
 
   private static final ObjectReader OBJECT_READER = new ObjectMapper().reader();
 
-  static String fetch(URI uri) throws IOException {
-    try (var httpClient = HttpClient.newBuilder().build()) {
-      var request = HttpRequest.newBuilder().uri(uri).GET().build();
-      var httpResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-      if (httpResponse.statusCode() != 200) {
-        throw new IOException("API request failed with status code: " + httpResponse.statusCode() + "  " + httpResponse.body());
-      }
-      return httpResponse.body();
-    } catch (InterruptedException e) {
-      throw (InterruptedIOException) new InterruptedIOException().initCause(e);
-    }
-  }
-
-  private static final Path CACHE_DIR = Paths.get("cache");
-  static {
-    try {
-      Files.createDirectories(CACHE_DIR);
-    } catch (IOException e) {
-      // do nothing, the cache is just disable
-    }
-  }
-
-  private static Path cachePath(URI uri) {
-    return CACHE_DIR.resolve(uri.getQuery());
-  }
-
-  private static String readFromCache(URI uri) throws IOException {
-    return Files.readString(cachePath(uri));
-  }
-
-  private static void storeIntoCache(URI uri, String json) throws IOException {
-    Files.writeString(cachePath(uri), json);
-  }
-
-  private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
-  private static URI buildURI(LatLong latLong, LocalDate startDate, LocalDate endDate) {
-    var names = "temperature_2m,wind_speed_10m,precipitation";
-    var query = "latitude=" + latLong.latitude +
-        "&longitude=" + latLong.longitude +
-        "&start_date=" + DATE_FORMATTER.format(startDate) +
-        "&end_date=" + DATE_FORMATTER.format(endDate) +
-        "&hourly=" + names;
-    try {
-      return new URI("https", "archive-api.open-meteo.com", "/v1/archive", query, null);
-    } catch (URISyntaxException e) {
-      throw new AssertionError(e);
-    }
-  }
-
   public static HourlyData getHourlyData(LatLong latLong, LocalDate startDate, LocalDate endDate)
       throws IOException{
 
-    var uri = buildURI(latLong, startDate, endDate);
+    var uri = new QueryBuilder(latLong, startDate, endDate).toURI();
     System.err.println(uri);
 
     String body;
