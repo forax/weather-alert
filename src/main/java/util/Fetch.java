@@ -11,10 +11,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public final class Fetch {
+  private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder().build();
+
   public static String fetch(URI uri) throws IOException {
-    try (var httpClient = HttpClient.newBuilder().build()) {
+    try {
       var request = HttpRequest.newBuilder().uri(uri).GET().build();
-      var httpResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+      var httpResponse = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
       if (httpResponse.statusCode() != 200) {
         throw new IOException("API request failed with status code: " + httpResponse.statusCode() + "  " + httpResponse.body());
       }
@@ -45,6 +47,7 @@ public final class Fetch {
     Files.writeString(cachePath(uri), json);
   }
 
+  @FunctionalInterface
   public interface IOFunction {
     String apply(URI uri) throws IOException;
   }
