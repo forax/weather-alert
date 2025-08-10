@@ -50,16 +50,19 @@ in [identity based WeatherComputation.java](src/main/java/identity/weather/Weath
 and [value based](src/main/java/value/weather/WeatherComputation.java).
 
 
-### Erasure
+### Collection erasure vs value class
 
-All is not rosy in the value world, because of the erause, a `java.util.List` of an identity class
-or a value class behave exactly the same way, because of the erasure, the fact that a class is value
-class is erased for a `java.util.List` so no performance boost without changing the code.
+All is not rosy in the value world, a `java.util.List` of a value class behave exactly the same way
+a list of identity class, no better performance, no flattening. It's because the type argument
+of generic types (parametrized types) is removed by the compiler (erasure),
+thus not present at runtime. A `java.util.List` does not know at runtime the class of its elements.
 
+Sadly it means that we have to propagate the type at runtime, one way or another.
 For Jackson, we need a deserializer which propagate the type argument,
-see [TypeAwareListDeserializer](src/main/java/util/TypeAwareListDeserializer.java) or
-for a Stream you need to use a list that is able to specialize itself by passing the runtime type
-as argument, see [WeatherComputation.toWeatherData()](src/main/java/identity/weather/WeatherComputation.java).
+see [TypeAwareListDeserializer](src/main/java/util/TypeAwareListDeserializer.java).
+For the method `toList()` of a Stream, we need to replace it with `collect(Collectors.toCollection())`
+so as a user, you control how the collection is initialized,
+see the method [WeatherComputation.toWeatherData()](src/main/java/identity/weather/WeatherComputation.java).
 
 
 ## Using IntelliJ IDEA
