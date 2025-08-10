@@ -24,7 +24,7 @@ public value record QueryBuilder(LatLong latLong, LocalDate startDate, LocalDate
     this(latLong, now.minusDays(1), now);
   }
 
-  public QueryBuilder date(LocalDate startDate, LocalDate endDate) {
+  public QueryBuilder dateRange(LocalDate startDate, LocalDate endDate) {
     return new QueryBuilder(latLong, startDate, endDate);
   }
 

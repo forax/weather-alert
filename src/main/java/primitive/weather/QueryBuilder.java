@@ -27,9 +27,9 @@ public final class QueryBuilder {
     this(latLong, now.minusDays(1), now);
   }
 
-  public QueryBuilder date(LocalDate startDate, LocalDate endDate) {
-    this.startDate = Objects.requireIdentity(startDate);
-    this.endDate = Objects.requireIdentity(endDate);
+  public QueryBuilder dateRange(LocalDate startDate, LocalDate endDate) {
+    this.startDate = Objects.requireNonNull(startDate);
+    this.endDate = Objects.requireNonNull(endDate);
     if (!startDate.isBefore(endDate)) {
       throw new IllegalArgumentException("StartDate must be before endDate");
     }
