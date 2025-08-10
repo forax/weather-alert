@@ -47,11 +47,8 @@ public class QueryBuilderTest {
     assertNotNull(queryBuilder);
     // The dates will be yesterday and today, so we just check the structure contains the
     // coordinates
-    var uriString = uri.toString();
-    assertTrue(
-        uriString.startsWith(
-            "https://archive-api.open-meteo.com/v1/archive?latitude=52.5&longitude=13.4"));
-    assertTrue(uriString.contains("hourly=temperature_2m,wind_speed_10m,precipitation"));
+    assertEquals("https://archive-api.open-meteo.com/v1/archive?latitude=52.5&longitude=13.4&start_date=2025-08-09&end_date=2025-08-10&hourly=temperature_2m,wind_speed_10m,precipitation",
+        uri.toString());
   }
 
   @ParameterizedTest(name = "{0} implementation")
