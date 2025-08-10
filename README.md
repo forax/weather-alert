@@ -22,7 +22,7 @@ The primitive version is just for performance comparison.
 
 ## Key Differences Between Identity and Value Classes
 
-### 1. **Memory Management and Performance**
+### **Memory Management and Performance**
 
 **Identity Classes:**
 - Objects are allocated on the heap with traditional `new` keyword
@@ -44,7 +44,7 @@ No identity enables two optimizations:
 The value classes tries to be the best of both worlds (primitive types and identity classes).
 
 
-### 2. **Declaration Syntax**
+### **Declaration Syntax**
 
 **Identity Classes:**
 ```java
@@ -79,7 +79,7 @@ At runtime, there are very few differences:
 
 ## Different use cases
 
-### 1. **Builder Pattern Implementation**
+### **Builder Pattern Implementation**
 
 **Identity Classes (Imperative Builders):**
 - More complex due to mutation and state tracking
@@ -97,7 +97,7 @@ see [QueryBuilder](src/main/java/identity/weather/QueryBuilder.java)
 see [ValueQueryBuilder](src/main/java/value/weather/ValueQueryBuilder.java)
 
 
-### 2. **Computational Code Benefits**
+### **Computational Code Benefits**
 
 **Identity Classes:**
 - Performance considerations may discourage grouping related fields
@@ -117,7 +117,7 @@ see methods `computeWeatherData()` and `computeHourlyData()` in
 [WeatherComputation](src/main/java/value/weather/WeatherComputation.java)
 
 
-### 3. **Collection Behavior Limitations**
+### **Collection Behavior Limitations**
 
 **Both Approaches Share This Limitation:**
 - Generic collections (like `java.util.List<T>`) don't benefit from value class optimizations
