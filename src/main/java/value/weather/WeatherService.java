@@ -6,22 +6,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import util.Fetch;
 import util.TypeAwareListDeserializer;
 
 import java.io.IOException;
-import java.io.InterruptedIOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Objects;
 
 import static util.Fetch.*;
 
@@ -37,18 +27,12 @@ public final class WeatherService {
   }
 
   public static HourlyData getHourlyData(LatLong latLong, LocalDate startDate, LocalDate endDate)
-      throws IOException{
+      throws IOException {
 
     var uri = new QueryBuilder(latLong, startDate, endDate).toURI();
-    System.err.println(uri);
+    //System.err.println(uri);
 
-    String body;
-    try {
-      body = readFromCache(uri);
-    } catch (IOException e) {
-      body = fetch(uri);
-      storeIntoCache(uri, body);
-    }
+    var body = cache(uri, Fetch::fetch);
 
     var response = OBJECT_READER.readValue(body, OpenMeteoResponse.class);
     return response.hourly();

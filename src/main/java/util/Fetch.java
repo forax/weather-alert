@@ -37,11 +37,25 @@ public final class Fetch {
     return CACHE_DIR.resolve(uri.getQuery());
   }
 
-  public static String readFromCache(URI uri) throws IOException {
+  private static String readFromCache(URI uri) throws IOException {
     return Files.readString(cachePath(uri));
   }
 
-  public static void storeIntoCache(URI uri, String json) throws IOException {
+  private static void storeIntoCache(URI uri, String json) throws IOException {
     Files.writeString(cachePath(uri), json);
+  }
+
+  public interface IOFunction {
+    String apply(URI uri) throws IOException;
+  }
+
+  public static String cache(URI uri, IOFunction function) throws IOException {
+    try {
+      return readFromCache(uri);
+    } catch (IOException e) {
+      var body = function.apply(uri);
+      storeIntoCache(uri, body);
+      return body;
+    }
   }
 }

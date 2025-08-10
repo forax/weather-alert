@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import util.Fetch;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -17,18 +18,12 @@ public final class WeatherService {
   private static final ObjectReader OBJECT_READER = new ObjectMapper().reader();
 
   public static HourlyData getHourlyData(LatLong latLong, LocalDate startDate, LocalDate endDate)
-      throws IOException{
+      throws IOException {
 
     var uri = new QueryBuilder(latLong, startDate, endDate).toURI();
-    System.err.println(uri);
+    //System.err.println(uri);
 
-    String body;
-    try {
-      body = readFromCache(uri);
-    } catch (IOException e) {
-      body = fetch(uri);
-      storeIntoCache(uri, body);
-    }
+    var body = cache(uri, Fetch::fetch);
 
     var response = OBJECT_READER.readValue(body, OpenMeteoResponse.class);
     return response.hourly();
