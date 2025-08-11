@@ -15,9 +15,9 @@ public class QueryBuilderTest {
   // Test data provider for all three implementations
   static Stream<QueryBuilderFactory> queryBuilderImplementations() {
     return Stream.of(
-        new QueryBuilderFactory("identity", identity.weather.QueryBuilder.class),
-        new QueryBuilderFactory("primitive", primitive.weather.QueryBuilder.class),
-        new QueryBuilderFactory("value", value.weather.QueryBuilder.class));
+        new QueryBuilderFactory(identity.weather.QueryBuilder.class),
+        new QueryBuilderFactory(primitive.weather.QueryBuilder.class),
+        new QueryBuilderFactory(value.weather.QueryBuilder.class));
   }
 
   @ParameterizedTest(name = "{0} implementation")
@@ -46,7 +46,7 @@ public class QueryBuilderTest {
 
     assertNotNull(queryBuilder);
 
-    // Calculate expected dates dynamically based on current date
+    // Calculate expected dates dynamically based on the current date
     var now = LocalDate.now();
     var yesterday = now.minusDays(1);
     var expectedUri =
@@ -134,7 +134,7 @@ public class QueryBuilderTest {
         uri.toString());
   }
 
-  public record QueryBuilderFactory(String name, Class<?> queryBuilderClass) {
+  public record QueryBuilderFactory(Class<?> queryBuilderClass) {
 
     private static AssertionError rethrow(InvocationTargetException e) {
       var cause = e.getCause();
@@ -203,11 +203,6 @@ public class QueryBuilderTest {
       } catch (ReflectiveOperationException e) {
         throw new AssertionError(e);
       }
-    }
-
-    @Override
-    public String toString() {
-      return name;
     }
   }
 }
