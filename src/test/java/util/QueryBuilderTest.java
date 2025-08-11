@@ -45,11 +45,17 @@ public class QueryBuilderTest {
     var uri = factory.toURI(queryBuilder);
 
     assertNotNull(queryBuilder);
-    // The dates will be yesterday and today, so we just check the structure contains the
-    // coordinates
-    assertEquals("https://archive-api.open-meteo.com/v1/archive?latitude=52.5&longitude=13.4&start_date=2025-08-09&end_date=2025-08-10&hourly=temperature_2m,wind_speed_10m,precipitation",
-        uri.toString());
+
+    // Calculate expected dates dynamically based on current date
+    var now = LocalDate.now();
+    var yesterday = now.minusDays(1);
+    var expectedUri =
+        "https://archive-api.open-meteo.com/v1/archive?latitude=52.5&longitude=13.4&start_date=%s&end_date=%s&hourly=temperature_2m,wind_speed_10m,precipitation"
+            .formatted(yesterday, now);
+
+    assertEquals(expectedUri, uri.toString());
   }
+
 
   @ParameterizedTest(name = "{0} implementation")
   @MethodSource("queryBuilderImplementations")
