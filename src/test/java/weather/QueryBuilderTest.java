@@ -1,4 +1,4 @@
-package util;
+package weather;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;

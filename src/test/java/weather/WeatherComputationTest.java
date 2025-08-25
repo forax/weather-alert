@@ -1,38 +1,18 @@
-package util;
+package weather;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class WeatherComputationTest {
 
-  // Test data provider for all three implementations
-  static Stream<WeatherComputationFactory> weatherComputationImplementations() {
-    return Stream.of(
-        new WeatherComputationFactory(identity.weather.WeatherComputation.class),
-        new WeatherComputationFactory(primitive.weather.WeatherComputation.class),
-        new WeatherComputationFactory(value.weather.WeatherComputation.class));
-  }
-
-  @ParameterizedTest(name = "{0} implementation")
-  @MethodSource("weatherComputationImplementations")
-  public void testComputeWeatherDataWithSampleData(WeatherComputationFactory factory) {
-    var weatherDataList = factory.createSampleWeatherDataList();
-    var result = factory.computeWeatherData(weatherDataList);
-    
-    assertNotNull(result);
-    // Verify the result contains expected computations
-    assertNotNull(factory.getWeatherDataAccessor(result, "minTemperature"));
-    assertNotNull(factory.getWeatherDataAccessor(result, "maxTemperature"));
-    assertNotNull(factory.getWeatherDataAccessor(result, "maxWindspeed"));
-    assertNotNull(factory.getWeatherDataAccessor(result, "totalPrecipitation"));
-  }
-
+  // helper methods
   private static Object unwrap(Object value)  {
     if (!(value instanceof Record record)) {
       return value;
@@ -46,6 +26,53 @@ public class WeatherComputationTest {
     } catch (InvocationTargetException e) {
       throw rethrow(e);
     }
+  }
+
+  private static Object wrap(Class<?> componentClass, float value) {
+    try {
+      var constructor = componentClass.getConstructor(float.class);
+      return constructor.newInstance(value);
+    } catch (InvocationTargetException e) {
+      throw rethrow(e);
+    } catch (ReflectiveOperationException e) {
+      throw new AssertionError(e);
+    }
+  }
+
+  private static AssertionError rethrow(InvocationTargetException e) {
+    var cause = e.getCause();
+    if (cause instanceof RuntimeException runtimeException) {
+      throw runtimeException;
+    }
+    if (cause instanceof Error error) {
+      throw error;
+    }
+    throw new AssertionError(cause);
+  }
+
+
+
+  // Test data provider for all three implementations
+  static Stream<WeatherComputationFactory> weatherComputationImplementations() {
+    return Stream.of(
+        new WeatherComputationFactory(identity.weather.WeatherComputation.class),
+        new WeatherComputationFactory(primitive.weather.WeatherComputation.class),
+        new WeatherComputationFactory(value.weather.WeatherComputation.class));
+  }
+
+  @ParameterizedTest(name = "{0} implementation")
+  @MethodSource("weatherComputationImplementations")
+  public void testComputeWeatherDataWithSampleData(WeatherComputationFactory factory) {
+    var weatherDataList = List.of(
+        WeatherComputationFactory.createWeatherData(20.5f, 15.2f, 2.3f, factory.weatherComputationClass),
+        WeatherComputationFactory.createWeatherData(25.0f, 10.5f, 1.2f, factory.weatherComputationClass));
+    var result = factory.computeWeatherData(weatherDataList);
+
+    // Verify the result contains expected computations
+    assertEquals(20.5f, unwrap(factory.getWeatherDataAccessor(result, "minTemperature")));
+    assertEquals(25.0f, unwrap(factory.getWeatherDataAccessor(result, "maxTemperature")));
+    assertEquals(15.2f, unwrap(factory.getWeatherDataAccessor(result, "maxWindspeed")));
+    assertEquals(3.5f, unwrap(factory.getWeatherDataAccessor(result, "totalPrecipitation")));
   }
 
   @ParameterizedTest(name = "{0} implementation")
@@ -76,89 +103,79 @@ public class WeatherComputationTest {
   @ParameterizedTest(name = "{0} implementation")
   @MethodSource("weatherComputationImplementations")
   public void testComputeHourlyDataWithSampleData(WeatherComputationFactory factory) {
-    var hourlyData = factory.createSampleHourlyData();
+    var hourlyData = WeatherComputationFactory.createHourlyData(
+        new float[]{20.5f, 25.0f, 18.3f},
+        new float[]{15.2f, 10.5f, 12.1f},
+        new float[]{2.3f, 1.2f, 0.8f},
+        factory.weatherComputationClass);
     var result = factory.computeHourlyData(hourlyData);
-    
-    assertNotNull(result);
-    assertNotNull(factory.getWeatherDataAccessor(result, "minTemperature"));
-    assertNotNull(factory.getWeatherDataAccessor(result, "maxTemperature"));
-    assertNotNull(factory.getWeatherDataAccessor(result, "maxWindspeed"));
-    assertNotNull(factory.getWeatherDataAccessor(result, "totalPrecipitation"));
+
+    assertEquals(18.3f, unwrap(factory.getWeatherDataAccessor(result, "minTemperature")));
+    assertEquals(25.0f, unwrap(factory.getWeatherDataAccessor(result, "maxTemperature")));
+    assertEquals(15.2f, unwrap(factory.getWeatherDataAccessor(result, "maxWindspeed")));
+    assertEquals(4.3f, unwrap(factory.getWeatherDataAccessor(result, "totalPrecipitation")));
   }
 
   @ParameterizedTest(name = "{0} implementation")
   @MethodSource("weatherComputationImplementations")
   public void testComputeHourlyDataWithMismatchedSizes(WeatherComputationFactory factory) {
-    var invalidHourlyData = factory.createInvalidHourlyData();
+    var invalidHourlyData = WeatherComputationFactory.createHourlyData(
+        new float[]{20.5f, 25.0f},   // 2 elements
+        new float[]{15.2f, 10.5f, 12.1f},        // 3 elements - mismatch!
+        new float[]{2.3f, 1.2f},                 // 2 elements
+        factory.weatherComputationClass);
     
     assertThrows(IllegalStateException.class, () -> factory.computeHourlyData(invalidHourlyData));
   }
 
   @ParameterizedTest(name = "{0} implementation")
   @MethodSource("weatherComputationImplementations")
-  public void testToWeatherData(WeatherComputationFactory factory) {
-    var hourlyData = factory.createSampleHourlyData();
-    var weatherDataList = factory.toWeatherData(hourlyData);
-    
-    assertNotNull(weatherDataList);
-    assertFalse(weatherDataList.isEmpty());
-    
-    // Verify the first weather data item
-    var firstWeatherData = weatherDataList.getFirst();
-    assertNotNull(firstWeatherData);
+  public void testWeatherDataProperties(WeatherComputationFactory factory) {
+    var weatherData = WeatherComputationFactory.createWeatherData(24f, 15f, 2f, factory.weatherComputationClass);
+
+    assertEquals(24f, unwrap(factory.getWeatherDataAccessor(weatherData, "temperature")));
+    assertEquals(15f, unwrap(factory.getWeatherDataAccessor(weatherData, "windspeed")));
+    assertEquals(2f, unwrap(factory.getWeatherDataAccessor(weatherData, "precipitation")));
   }
 
   @ParameterizedTest(name = "{0} implementation")
   @MethodSource("weatherComputationImplementations")
-  public void testWeatherDataProperties(WeatherComputationFactory factory) {
-    var weatherData = factory.createSampleWeatherDataList().getFirst();
+  public void testToWeatherData(WeatherComputationFactory factory) {
+    var hourlyData = WeatherComputationFactory.createHourlyData(
+        new float[]{20.5f, 25.0f, 18.3f},
+        new float[]{15.2f, 10.5f, 12.1f},
+        new float[]{2.3f, 1.2f, 0.8f},
+        factory.weatherComputationClass);
+    var weatherDataList = factory.toWeatherData(hourlyData);
+
+    assertEquals(3, weatherDataList.size());
     
-    assertNotNull(weatherData);
-    assertNotNull(factory.getWeatherDataAccessor(weatherData, "temperature"));
-    assertNotNull(factory.getWeatherDataAccessor(weatherData, "windspeed"));
-    assertNotNull(factory.getWeatherDataAccessor(weatherData, "precipitation"));
+    // Verify the first weather data item
+    var firstWeatherData = weatherDataList.getFirst();
+    assertEquals(20.5f, unwrap(factory.getWeatherDataAccessor(firstWeatherData, "temperature")));
+    assertEquals(15.2f, unwrap(factory.getWeatherDataAccessor(firstWeatherData, "windspeed")));
+    assertEquals(2.3f, unwrap(factory.getWeatherDataAccessor(firstWeatherData, "precipitation")));
   }
 
   @ParameterizedTest(name = "{0} implementation")
   @MethodSource("weatherComputationImplementations")
   public void testWeatherResultEquality(WeatherComputationFactory factory) {
-    var weatherDataList = factory.createSampleWeatherDataList();
+    var weatherDataList = List.of(
+        WeatherComputationFactory.createWeatherData(20.5f, 15.2f, 2.3f, factory.weatherComputationClass),
+        WeatherComputationFactory.createWeatherData(25.0f, 10.5f, 1.2f, factory.weatherComputationClass));
     
     var result1 = factory.computeWeatherData(weatherDataList);
     var result2 = factory.computeWeatherData(weatherDataList);
     
-    // Verify that computing with same data produces equal results
+    // Verify that computing with the same data produces equal results
     assertEquals(result1, result2);
     assertEquals(result1.hashCode(), result2.hashCode());
   }
 
-  private static AssertionError rethrow(InvocationTargetException e) {
-    var cause = e.getCause();
-    if (cause instanceof RuntimeException runtimeException) {
-      throw runtimeException;
-    }
-    if (cause instanceof Error error) {
-      throw error;
-    }
-    throw new AssertionError(cause);
-  }
-
-
 
   public record WeatherComputationFactory(Class<?> weatherComputationClass) {
-    private static Class<?> componentClassOf(String packageName, String className) throws ClassNotFoundException {
+    private static Class<?> weatherServiceClassOf(String packageName, String className) throws ClassNotFoundException {
       return Class.forName(packageName + ".WeatherService$" + className);
-    }
-
-    private static Object wrap(Class<?> componentClass, float value) {
-      try {
-        var constructor = componentClass.getConstructor(float.class);
-        return constructor.newInstance(value);
-      } catch (InvocationTargetException e) {
-        throw rethrow(e);
-      } catch (ReflectiveOperationException e) {
-        throw new AssertionError(e);
-      }
     }
 
     private static Object createWeatherData(float temperature, float windspeed, float precipitation, Class<?> weatherComputationClass) {
@@ -172,9 +189,9 @@ public class WeatherComputationTest {
           return constructor.newInstance(temperature, windspeed, precipitation);
         } else {
           // For identity and value implementations: need Temperature, Windspeed, Precipitation objects
-          var temperatureClass = componentClassOf(packageName, "Temperature");
-          var windspeedClass = componentClassOf(packageName, "Windspeed");
-          var precipitationClass = componentClassOf(packageName, "Precipitation");
+          var temperatureClass = weatherServiceClassOf(packageName, "Temperature");
+          var windspeedClass = weatherServiceClassOf(packageName, "Windspeed");
+          var precipitationClass = weatherServiceClassOf(packageName, "Precipitation");
 
           var temperatureObject = wrap(temperatureClass, temperature);
           var windspeedObject = wrap(windspeedClass, windspeed);
@@ -190,45 +207,32 @@ public class WeatherComputationTest {
       }
     }
 
-    public List<Object> createSampleWeatherDataList() {
-      return List.of(
-          createWeatherData(20.5f, 15.2f, 2.3f, weatherComputationClass),
-          createWeatherData(25.0f, 10.5f, 1.2f, weatherComputationClass));
-    }
-
-    public Object createSampleHourlyData() {
+    public static Object createHourlyData(float[] temperatures, float[] windspeeds, float[] precipitations, Class<?> weatherComputationClass) {
       try {
         var packageName = weatherComputationClass.getPackageName();
-        var hourlyDataClass = Class.forName(packageName + ".WeatherService$HourlyData");
-        
+        var hourlyDataClass = weatherServiceClassOf(packageName, "HourlyData");
+
         if (packageName.equals("primitive.weather")) {
           // For primitive: HourlyData(float[] temperatures, float[] windspeeds, float[] precipitations)
           var constructor = hourlyDataClass.getConstructor(float[].class, float[].class, float[].class);
-          return constructor.newInstance(
-              new float[]{20.5f, 25.0f, 18.3f},
-              new float[]{15.2f, 10.5f, 12.1f},
-              new float[]{2.3f, 1.2f, 0.8f});
+          return constructor.newInstance(temperatures, windspeeds, precipitations);
         } else {
           // For identity/value: HourlyData(List<Temperature>, List<Windspeed>, List<Precipitation>)
-          var temperatureClass = Class.forName(packageName + ".WeatherService$Temperature");
-          var windspeedClass = Class.forName(packageName + ".WeatherService$Windspeed");
-          var precipitationClass = Class.forName(packageName + ".WeatherService$Precipitation");
+          var temperatureClass = weatherServiceClassOf(packageName, "Temperature");
+          var windspeedClass = weatherServiceClassOf(packageName, "Windspeed");
+          var precipitationClass = weatherServiceClassOf(packageName, "Precipitation");
 
-          var temperatures = List.of(
-              wrap(temperatureClass, 20.5f),
-              wrap(temperatureClass, 25.0f),
-              wrap(temperatureClass, 18.3f));
-          var windspeeds = List.of(
-              wrap(windspeedClass, 15.2f),
-              wrap(windspeedClass, 10.5f),
-              wrap(windspeedClass, 12.1f));
-          var precipitations = List.of(
-              wrap(precipitationClass, 2.3f),
-              wrap(precipitationClass, 1.2f),
-              wrap(precipitationClass, 0.8f));
-          
+          var temperatureList = IntStream.range(0, temperatures.length)
+              .mapToObj(i -> wrap(temperatureClass, temperatures[i]))
+              .toList();
+          var windspeedList = IntStream.range(0, windspeeds.length)
+              .mapToObj(i -> wrap(windspeedClass, windspeeds[i]))
+              .toList();
+          var precipitationList = IntStream.range(0, precipitations.length)
+              .mapToObj(i -> wrap(precipitationClass, precipitations[i]))
+              .toList();
           var constructor = hourlyDataClass.getConstructor(List.class, List.class, List.class);
-          return constructor.newInstance(temperatures, windspeeds, precipitations);
+          return constructor.newInstance(temperatureList, windspeedList, precipitationList);
         }
       } catch (InvocationTargetException e) {
         throw rethrow(e);
@@ -237,46 +241,7 @@ public class WeatherComputationTest {
       }
     }
 
-    public Object createInvalidHourlyData() {
-      try {
-        var packageName = weatherComputationClass.getPackageName();
-        var hourlyDataClass = Class.forName(packageName + ".WeatherService$HourlyData");
-        
-        if (packageName.equals("primitive.weather")) {
-          // Create mismatched array sizes
-          var constructor = hourlyDataClass.getConstructor(float[].class, float[].class, float[].class);
-          return constructor.newInstance(
-              new float[]{20.5f, 25.0f},           // 2 elements
-              new float[]{15.2f, 10.5f, 12.1f},   // 3 elements - mismatch!
-              new float[]{2.3f, 1.2f});            // 2 elements
-        } else {
-          // Create mismatched list sizes
-          var temperatureClass = Class.forName(packageName + ".WeatherService$Temperature");
-          var windspeedClass = Class.forName(packageName + ".WeatherService$Windspeed");
-          var precipitationClass = Class.forName(packageName + ".WeatherService$Precipitation");
-
-          var temperatures = List.of(
-              wrap(temperatureClass, 20.5f),
-              wrap(temperatureClass, 25.0f));     // 2 elements
-          var windspeeds = List.of(
-              wrap(windspeedClass, 15.2f),
-              wrap(windspeedClass, 10.5f),
-              wrap(windspeedClass, 12.1f));      // 3 elements - mismatch!
-          var precipitations = List.of(
-              wrap(precipitationClass, 2.3f),
-              wrap(precipitationClass, 1.2f));   // 2 elements
-          
-          var constructor = hourlyDataClass.getConstructor(List.class, List.class, List.class);
-          return constructor.newInstance(temperatures, windspeeds, precipitations);
-        }
-      } catch (InvocationTargetException e) {
-        throw rethrow(e);
-      } catch (ReflectiveOperationException e) {
-        throw new AssertionError(e);
-      }
-    }
-
-    public Object computeWeatherData(List<Object> weatherDataList) {
+    public Object computeWeatherData(List<?> weatherDataList) {
       try {
         var method = weatherComputationClass.getMethod("computeWeatherData", List.class);
         return method.invoke(null, weatherDataList);
