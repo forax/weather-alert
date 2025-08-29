@@ -1,19 +1,12 @@
 package value.weather;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.cfg.CoercionAction;
-import com.fasterxml.jackson.databind.cfg.CoercionInputShape;
-import com.fasterxml.jackson.databind.deser.std.NumberDeserializers;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.type.LogicalType;
 import util.Fetch;
-import util.FloatConstructorModule;
+import util.FloatConstructorDeserializerModifier;
 import util.TypeAwareListDeserializer;
 
 import java.io.IOException;
@@ -25,7 +18,7 @@ public final class WeatherService {
   private static final ObjectReader OBJECT_READER =
       new ObjectMapper()
           .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-          .registerModule(new FloatConstructorModule())
+          .registerModule(new SimpleModule().setDeserializerModifier(new FloatConstructorDeserializerModifier()))
           .registerModule(new SimpleModule().addDeserializer(List.class, new TypeAwareListDeserializer(null)))
           .reader();
 

@@ -4,8 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import util.Fetch;
-import util.FloatConstructorModule;
+import util.FloatConstructorDeserializerModifier;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -15,7 +16,7 @@ public final class WeatherService {
 
   private static final ObjectReader OBJECT_READER = new ObjectMapper()
       .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-      .registerModule(new FloatConstructorModule())
+      .registerModule(new SimpleModule().setDeserializerModifier(new FloatConstructorDeserializerModifier()))
       .reader();
 
   public static HourlyData getHourlyData(LatLong latLong, LocalDate startDate, LocalDate endDate)
