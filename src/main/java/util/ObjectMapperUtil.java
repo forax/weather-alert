@@ -6,10 +6,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.cfg.CoercionAction;
-import com.fasterxml.jackson.databind.cfg.CoercionInputShape;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.type.LogicalType;
 
 import java.io.IOException;
 import java.util.List;
@@ -33,8 +30,6 @@ public final class ObjectMapperUtil {
   private static ObjectMapper newBasicMapper() {
     var mapper = new ObjectMapper()
       .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    mapper.coercionConfigFor(LogicalType.Float)
-      .setCoercion(CoercionInputShape.Float, CoercionAction.TryConvert);
 
     SimpleModule module = new SimpleModule();
     // Identity
