@@ -1,6 +1,5 @@
 package primitive.weather;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -16,8 +15,7 @@ public final class WeatherService {
   public static HourlyData getHourlyData(LatLong latLong, LocalDate startDate, LocalDate endDate)
       throws IOException {
 
-    var uri = new QueryBuilder(latLong, startDate, endDate).toURI();
-    //System.err.println(uri);
+    var uri = new QueryBuilder(latLong).dateRange(startDate, endDate).toURI();
 
     var body = Fetch.cache(uri, Fetch::fetch);
 
@@ -27,13 +25,11 @@ public final class WeatherService {
 
   public record LatLong(double latitude, double longitude) {}
 
-  @JsonIgnoreProperties(ignoreUnknown = true)
   public record HourlyData(
       @JsonProperty("temperature_2m") float[] temperatures,
       @JsonProperty("wind_speed_10m") float[] windspeeds,
       @JsonProperty("precipitation") float[] precipitations
   ) {}
 
-  @JsonIgnoreProperties(ignoreUnknown = true)
   private record OpenMeteoResponse(HourlyData hourly) {}
 }

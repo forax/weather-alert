@@ -1,13 +1,9 @@
 package value.weather;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import util.Fetch;
-import util.TypeAwareListDeserializer;
+import util.ObjectMapperUtil;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -15,20 +11,12 @@ import java.util.List;
 
 public final class WeatherService {
 
-  private static final ObjectReader OBJECT_READER;
-  static {
-    var module = new SimpleModule();
-    module.addDeserializer(List.class, new TypeAwareListDeserializer(null));
-    var mapper = new ObjectMapper();
-    mapper.registerModule(module);
-    OBJECT_READER =  mapper.reader();
-  }
+  private static final ObjectReader OBJECT_READER = ObjectMapperUtil.newTypeAwareObjectReader();
 
   public static HourlyData getHourlyData(LatLong latLong, LocalDate startDate, LocalDate endDate)
       throws IOException {
 
-    var uri = new QueryBuilder(latLong, startDate, endDate).toURI();
-    //System.err.println(uri);
+    var uri = new QueryBuilder(latLong).dateRange(startDate, endDate).toURI();
 
     var body = Fetch.cache(uri, Fetch::fetch);
 
@@ -39,7 +27,6 @@ public final class WeatherService {
   public value record LatLong(double latitude, double longitude) {}
 
   public value record Temperature(float value) {
-    @JsonCreator
     public Temperature(double value) {
       this((float) value);
     }
@@ -66,7 +53,6 @@ public final class WeatherService {
       // super();  // comment for IntelliJ
     }
 
-    @JsonCreator
     public Windspeed(double value) {
       this((float) value);
     }
@@ -89,7 +75,6 @@ public final class WeatherService {
       // super();   // comment for IntelliJ
     }
 
-    @JsonCreator
     public Precipitation(double value) {
       this((float) value);
     }
@@ -104,13 +89,11 @@ public final class WeatherService {
     }
   }
 
-  @JsonIgnoreProperties(ignoreUnknown = true)
   public record HourlyData(
       @JsonProperty("temperature_2m") List<Temperature> temperatures,
       @JsonProperty("wind_speed_10m") List<Windspeed> windspeeds,
       @JsonProperty("precipitation") List<Precipitation> precipitations
   ) {}
 
-  @JsonIgnoreProperties(ignoreUnknown = true)
   private record OpenMeteoResponse(HourlyData hourly) {}
 }
