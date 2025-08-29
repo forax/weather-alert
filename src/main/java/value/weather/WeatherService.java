@@ -1,14 +1,19 @@
 package value.weather;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.cfg.CoercionAction;
 import com.fasterxml.jackson.databind.cfg.CoercionInputShape;
+import com.fasterxml.jackson.databind.deser.std.NumberDeserializers;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.type.LogicalType;
 import util.Fetch;
+import util.FloatConstructorModule;
 import util.TypeAwareListDeserializer;
 
 import java.io.IOException;
@@ -17,17 +22,12 @@ import java.util.List;
 
 public final class WeatherService {
 
-  private static final ObjectReader OBJECT_READER;
-  static {
-    var mapper = new ObjectMapper()
-        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    mapper.coercionConfigFor(LogicalType.Float)
-        .setCoercion(CoercionInputShape.Float, CoercionAction.TryConvert);
-    var module = new SimpleModule();
-    module.addDeserializer(List.class, new TypeAwareListDeserializer(null));
-    mapper.registerModule(module);
-    OBJECT_READER = mapper.reader();
-  }
+  private static final ObjectReader OBJECT_READER =
+      new ObjectMapper()
+          .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+          .registerModule(new FloatConstructorModule())
+          .registerModule(new SimpleModule().addDeserializer(List.class, new TypeAwareListDeserializer(null)))
+          .reader();
 
   public static HourlyData getHourlyData(LatLong latLong, LocalDate startDate, LocalDate endDate)
       throws IOException {
@@ -43,10 +43,6 @@ public final class WeatherService {
   public value record LatLong(double latitude, double longitude) {}
 
   public value record Temperature(float value) {
-    public Temperature(double value) {
-      this((float) value);
-    }
-
     @Override
     public String toString() {
       return value + " °C";
@@ -69,10 +65,6 @@ public final class WeatherService {
       // super();  // comment for IntelliJ
     }
 
-    public Windspeed(double value) {
-      this((float) value);
-    }
-
     @Override
     public String toString() {
       return value + " km/h";
@@ -89,10 +81,6 @@ public final class WeatherService {
         throw new IllegalArgumentException("value < 0");
       }
       // super();   // comment for IntelliJ
-    }
-
-    public Precipitation(double value) {
-      this((float) value);
     }
 
     @Override
