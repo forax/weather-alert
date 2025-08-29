@@ -1,9 +1,13 @@
 package identity.weather;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.cfg.CoercionAction;
+import com.fasterxml.jackson.databind.cfg.CoercionInputShape;
+import com.fasterxml.jackson.databind.type.LogicalType;
 import util.Fetch;
-import util.ObjectMapperUtil;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -11,7 +15,14 @@ import java.util.List;
 
 public final class WeatherService {
 
-  private static final ObjectReader OBJECT_READER = ObjectMapperUtil.newBasicObjectReader();
+  private static final ObjectReader OBJECT_READER;
+  static {
+    var mapper = new ObjectMapper()
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    mapper.coercionConfigFor(LogicalType.Float)
+        .setCoercion(CoercionInputShape.Float, CoercionAction.TryConvert);
+    OBJECT_READER = mapper.reader();
+  }
 
   public static HourlyData getHourlyData(LatLong latLong, LocalDate startDate, LocalDate endDate)
       throws IOException {
@@ -27,6 +38,10 @@ public final class WeatherService {
   public record LatLong(double latitude, double longitude) {}
 
   public record Temperature(float value) {
+    public Temperature(double value) {
+      this((float) value);
+    }
+
     @Override
     public String toString() {
       return value + " °C";
@@ -49,6 +64,9 @@ public final class WeatherService {
       //super();
     }
 
+    public Windspeed(double value) {
+      this((float) value);
+    }
 
     @Override
     public String toString() {
@@ -66,6 +84,10 @@ public final class WeatherService {
         throw new IllegalArgumentException("value < 0");
       }
       //super();
+    }
+
+    public Precipitation(double value) {
+      this((float) value);
     }
 
     @Override

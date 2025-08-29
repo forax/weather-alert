@@ -10,7 +10,7 @@ class WeatherExample {
     var noirmoutier = new WeatherService.LatLong(46.966667, -2.216667);
     var toulon = new WeatherService.LatLong(43.125833, 5.930556);
 
-    // Ten years, 2025-2015
+    // Twenty years, 2025-2005
     var endDate = LocalDate.parse("2025-01-01");
     var startDate = endDate.minusYears(20);
     var hourlyData = WeatherService.getHourlyData(paris, startDate, endDate);

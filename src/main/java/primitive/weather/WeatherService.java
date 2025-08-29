@@ -1,8 +1,13 @@
 package primitive.weather;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.cfg.CoercionAction;
+import com.fasterxml.jackson.databind.cfg.CoercionInputShape;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.type.LogicalType;
 import util.Fetch;
 
 import java.io.IOException;
@@ -10,7 +15,14 @@ import java.time.LocalDate;
 
 public final class WeatherService {
 
-  private static final ObjectReader OBJECT_READER = new ObjectMapper().reader();
+  private static final ObjectReader OBJECT_READER;
+  static {
+    var mapper = new ObjectMapper()
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    mapper.coercionConfigFor(LogicalType.Float)
+        .setCoercion(CoercionInputShape.Float, CoercionAction.TryConvert);
+    OBJECT_READER = mapper.reader();
+  }
 
   public static HourlyData getHourlyData(LatLong latLong, LocalDate startDate, LocalDate endDate)
       throws IOException {

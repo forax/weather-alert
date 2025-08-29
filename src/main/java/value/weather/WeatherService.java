@@ -1,9 +1,15 @@
 package value.weather;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.cfg.CoercionAction;
+import com.fasterxml.jackson.databind.cfg.CoercionInputShape;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.type.LogicalType;
 import util.Fetch;
-import util.ObjectMapperUtil;
+import util.TypeAwareListDeserializer;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -11,7 +17,17 @@ import java.util.List;
 
 public final class WeatherService {
 
-  private static final ObjectReader OBJECT_READER = ObjectMapperUtil.newTypeAwareObjectReader();
+  private static final ObjectReader OBJECT_READER;
+  static {
+    var mapper = new ObjectMapper()
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    mapper.coercionConfigFor(LogicalType.Float)
+        .setCoercion(CoercionInputShape.Float, CoercionAction.TryConvert);
+    var module = new SimpleModule();
+    module.addDeserializer(List.class, new TypeAwareListDeserializer(null));
+    mapper.registerModule(module);
+    OBJECT_READER = mapper.reader();
+  }
 
   public static HourlyData getHourlyData(LatLong latLong, LocalDate startDate, LocalDate endDate)
       throws IOException {

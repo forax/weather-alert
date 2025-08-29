@@ -13,8 +13,10 @@ import value.weather.WeatherService.*;
 public class WeatherComputation {
 
   //public value record WeatherData(Temperature temperature, Windspeed windspeed, Precipitation precipitation) { }
-  @LooselyConsistentValue
-  public value record WeatherData(@NullRestricted Temperature temperature, @NullRestricted Windspeed windspeed, @NullRestricted Precipitation precipitation) { }
+  public value record WeatherData(
+      @NullRestricted Temperature temperature,
+      @NullRestricted Windspeed windspeed,
+      @NullRestricted Precipitation precipitation) { }
 
   public static List<WeatherData> toWeatherData(HourlyData data) {
     var temperatures = data.temperatures();
