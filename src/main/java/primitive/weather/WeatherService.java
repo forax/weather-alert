@@ -1,16 +1,16 @@
 package primitive.weather;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import util.Fetch;
+import util.ObjectMapperUtil;
 
 import java.io.IOException;
 import java.time.LocalDate;
 
 public final class WeatherService {
 
-  private static final ObjectReader OBJECT_READER = new ObjectMapper().reader();
+  private static final ObjectReader OBJECT_READER = ObjectMapperUtil.newBasicObjectReader();
 
   public static HourlyData getHourlyData(LatLong latLong, LocalDate startDate, LocalDate endDate)
       throws IOException {
