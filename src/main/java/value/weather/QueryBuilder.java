@@ -16,7 +16,7 @@ public value record QueryBuilder(LatLong latLong, LocalDate startDate, LocalDate
     if (!startDate.isBefore(endDate)) {
       throw new IllegalArgumentException("StartDate must be before endDate");
     }
-    // super();
+    // super();  // implicit
   }
 
   public QueryBuilder(LatLong latLong) {

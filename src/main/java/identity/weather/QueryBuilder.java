@@ -20,6 +20,7 @@ public final class QueryBuilder {
     if (!startDate.isBefore(endDate)) {
       throw new IllegalArgumentException("StartDate must be before endDate");
     }
+    super();
   }
 
   public QueryBuilder(LatLong latLong) {
