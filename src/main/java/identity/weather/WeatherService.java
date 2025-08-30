@@ -52,7 +52,6 @@ public final class WeatherService {
       if (value < 0) {
         throw new IllegalArgumentException("value < 0");
       }
-      //super();
     }
 
     @Override
@@ -70,7 +69,6 @@ public final class WeatherService {
       if (value < 0) {
         throw new IllegalArgumentException("value < 0");
       }
-      //super();
     }
 
     @Override
