@@ -3,8 +3,8 @@ package identity.weather;
 import java.io.IOException;
 import java.time.LocalDate;
 
-class WeatherExample {
-  static void main() throws IOException {
+public class WeatherExample {
+  public static void main() throws IOException {
     // Coordinates
     var paris = new WeatherService.LatLong(48.864716, 2.349014);
     var noirmoutier = new WeatherService.LatLong(46.966667, -2.216667);

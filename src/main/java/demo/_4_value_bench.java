@@ -10,6 +10,8 @@ value record Windspeed(int value) {
   public String toString() {
     return value + " km/h";
   }
+
+  // TODO : add + loop bench jmh (max)
 }
 
 void main() {

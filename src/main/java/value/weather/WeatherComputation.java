@@ -1,14 +1,15 @@
 package value.weather;
 
-import java.lang.invoke.MethodHandles;
+import jdk.internal.vm.annotation.NullRestricted;
+import util.FlatListFactory;
+import value.weather.WeatherService.HourlyData;
+import value.weather.WeatherService.Precipitation;
+import value.weather.WeatherService.Temperature;
+import value.weather.WeatherService.Windspeed;
+
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
-import jdk.internal.vm.annotation.LooselyConsistentValue;
-import jdk.internal.vm.annotation.NullRestricted;
-import util.FlatListFactory;
-import value.weather.WeatherService.*;
 
 public class WeatherComputation {
 
@@ -58,6 +59,17 @@ public class WeatherComputation {
     return result;
   }
 
+  public static WeatherResult computeWeatherData(WeatherData[] weatherDataArray) {
+    var result = new WeatherResult(
+      new Temperature(Float.MAX_VALUE),
+      new Temperature(Float.MIN_VALUE),
+      new Windspeed(0.0f),
+      new Precipitation(0.0f));
+    for(var weatherData : weatherDataArray) {
+      result = result.compute(weatherData);
+    }
+    return result;
+  }
 
   public static WeatherResult computeHourlyData(HourlyData data) {
     var result = new WeatherResult(
