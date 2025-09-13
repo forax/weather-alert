@@ -1,21 +1,26 @@
-value record Windspeed(int value) {
-  public Windspeed {
-    if (value < 0) {
-      throw new IllegalArgumentException("value < 0");
-    }
-    //super();   // IntelliJ is wrong here !
+/*value*/ record Windspeed(float value) {
+  public Windspeed min(Windspeed temperature) {
+    return new Windspeed(Math.min(value, temperature.value));
   }
 
-  @Override
-  public String toString() {
-    return value + " km/h";
+  public Windspeed max(Windspeed temperature) {
+    return new Windspeed(Math.max(value, temperature.value));
   }
-
-  // TODO : add + loop bench jmh (max)
 }
 
 void main() {
-  var windspeed = new Windspeed(10);
-  System.out.println(windspeed);
-  System.out.println(windspeed.getClass().isValue());
+
+  var speeds = new Windspeed[10_000];
+  for (int i = 0; i < speeds.length; i++) {
+    speeds[i] = new Windspeed(i);
+  }
+
+  var max = new Windspeed(Float.MIN_VALUE);
+  var min = new Windspeed(Float.MAX_VALUE);
+
+  for (int i = 0; i < 10_000; i++) {
+    var speed = speeds[i];
+    max = max.max(speed);
+    min = min.min(speed);
+  }
 }
