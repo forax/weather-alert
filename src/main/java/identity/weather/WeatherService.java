@@ -23,7 +23,6 @@ public final class WeatherService {
       throws IOException {
 
     var uri = new QueryBuilder(latLong).dateRange(startDate, endDate).toURI();
-    System.out.println(uri);
 
     var body = Fetch.cache(uri, Fetch::fetch);
 
