@@ -2,16 +2,16 @@ import jdk.internal.vm.annotation.NullRestricted;
 
 value
 record Data(
-  @NullRestricted
+//  @NullRestricted
   Boolean b1,
 
-  @NullRestricted
+//  @NullRestricted
   Boolean b2,
 
-  @NullRestricted
+//  @NullRestricted
   Integer i1,
 
-  @NullRestricted
+//  @NullRestricted
   Integer i2) {
 }
 
