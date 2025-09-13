@@ -23,4 +23,6 @@ void main() {
     max = max.max(speed);
     min = min.min(speed);
   }
+
+  IO.println(min + " " + max);
 }
