@@ -1,3 +1,4 @@
+
 value record Windspeed(int value) {
   public Windspeed {
     if (value < 0) {
