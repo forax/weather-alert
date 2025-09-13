@@ -1,12 +1,9 @@
 package identity.weather;
 
-import identity.weather.WeatherService.HourlyData;
-import identity.weather.WeatherService.Precipitation;
-import identity.weather.WeatherService.Temperature;
-import identity.weather.WeatherService.Windspeed;
-
 import java.util.List;
 import java.util.stream.IntStream;
+
+import identity.weather.WeatherService.*;
 
 public class WeatherComputation {
   public record WeatherData(Temperature temperature, Windspeed windspeed, Precipitation precipitation) { }
@@ -42,19 +39,6 @@ public class WeatherComputation {
     return new WeatherResult(minTemperature, maxTemperature, maxWindspeed, totalPrecipitation);
   }
 
-  public static WeatherResult computeWeatherData(WeatherData[] weatherDataArray) {
-    var minTemperature = new Temperature(Float.MAX_VALUE);
-    var maxTemperature = new Temperature(Float.MIN_VALUE);
-    var maxWindspeed = new Windspeed(0.0f);
-    var totalPrecipitation = new Precipitation(0.0f);
-    for(var weatherData : weatherDataArray) {
-      minTemperature = minTemperature.min(weatherData.temperature());
-      maxTemperature = maxTemperature.max(weatherData.temperature());
-      maxWindspeed = maxWindspeed.max(weatherData.windspeed());
-      totalPrecipitation = totalPrecipitation.add(weatherData.precipitation());
-    }
-    return new WeatherResult(minTemperature, maxTemperature, maxWindspeed, totalPrecipitation);
-  }
 
   public static WeatherResult computeHourlyData(HourlyData data) {
     var minTemperature = new Temperature(Float.MAX_VALUE);
