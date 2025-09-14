@@ -12,12 +12,12 @@ import org.openjdk.jmh.annotations.Warmup;
 
 import java.util.concurrent.TimeUnit;
 
-// Benchmark                                       Mode  Cnt      Score      Error  Units
-// Identity   TemperatureValueBench.computeMinMax  avgt    5  41814,510 ± 2631,829  ns/op
-// Value      TemperatureValueBench.computeMinMax  avgt    5  10235,281 ± 170,167  ns/op
+// Benchmark                                     Mode  Cnt  Score   Error  Units
+// Identity TemperatureValueBench.computeMinMax  avgt    5  42,704 ± 4,954  us/op
+// Value    TemperatureValueBench.computeMinMax  avgt    5  10,674 ± 0,506  us/op
 
 @BenchmarkMode(Mode.AverageTime)
-@OutputTimeUnit(TimeUnit.NANOSECONDS)
+@OutputTimeUnit(TimeUnit.MICROSECONDS)
 @State(Scope.Benchmark)
 @Fork(value = 1, jvmArgs = "--enable-preview")
 @Warmup(iterations = 5, time = 1)
@@ -32,7 +32,8 @@ public class TemperatureValueBench {
     }
   }
 
-  /*value*/ record Temperature(float value) {
+//  value
+  record Temperature(float value) {
     public Temperature min(Temperature temperature) {
       return new Temperature(Math.min(value, temperature.value));
     }
