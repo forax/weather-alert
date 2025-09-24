@@ -12,17 +12,16 @@
 }
 
 void main() {
-  var windspeed = new Windspeed(10);
-  var windspeed2 = new Windspeed(10);
+  Object windspeed = new Windspeed(10);
+  Object windspeed2 = new Windspeed(10);
 
-  // new semantics for == must be defined !
-  System.out.println(windspeed == windspeed2);
+  // new semantics for ==
+  IO.println(windspeed == windspeed2);
 
-  // new semantics for identityHashCode must be defined !
-  System.out.println(System.identityHashCode(windspeed));
-  System.out.println(System.identityHashCode(windspeed2));
-
-  // new semantics for synchronized must be defined !
+  // new semantics for identityHashCode
+  IO.println(System.identityHashCode(windspeed));
+  IO.println(System.identityHashCode(windspeed2));
+  
   //synchronized (windspeed) { }
 
   Object o = windspeed;

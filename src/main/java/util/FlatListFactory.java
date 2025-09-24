@@ -440,7 +440,7 @@ public final class FlatListFactory {
     stringList.add("Specialized");
     stringList.add("Arrays");
 
-    System.out.println(stringList);
+    IO.println(stringList);
 
     // Test integer list
     List<Integer> intList = create(Integer.class, NON_NULL_FLAT);
@@ -448,22 +448,22 @@ public final class FlatListFactory {
       intList.add(i);
     }
 
-    System.out.println(intList);
+    IO.println(intList);
 
     // Verify that different types have different hidden classes but share template
     List<String> anotherStringList = create(String.class, NON_FLAT);
-    System.out.println(
+    IO.println(
         "String classes are same: " + (stringList.getClass() == anotherStringList.getClass()));
-    System.out.println(
+    IO.println(
         "String and Integer classes are different: "
             + (stringList.getClass() != intList.getClass()));
 
     // Test methods inherited from AbstractList
-    System.out.println("Contains 'Hello': " + stringList.contains("Hello"));
-    System.out.println("Index of 'World': " + stringList.indexOf("World"));
+    IO.println("Contains 'Hello': " + stringList.contains("Hello"));
+    IO.println("Index of 'World': " + stringList.indexOf("World"));
 
     // Test that arrays are properly typed
     Object[] stringArray = stringList.toArray();
-    System.out.println("String array type: " + stringArray.getClass().getComponentType());
+    IO.println("String array type: " + stringArray.getClass().getComponentType());
   }
 }

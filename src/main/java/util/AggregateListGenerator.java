@@ -465,7 +465,7 @@ final class AggregateListGenerator {
     var factory = factory(MethodHandles.lookup(), tupleClass);
 
     var list = factory.create(List.of(42), List.of("foo"));
-    System.out.println("value class ? " + list.getClass().isValue());
-    System.out.println(list);
+    IO.println("value class ? " + list.getClass().isValue());
+    IO.println(list);
   }
 }
