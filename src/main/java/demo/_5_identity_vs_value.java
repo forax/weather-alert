@@ -11,9 +11,28 @@
   }
 }
 
+/*abstract*/ value class Point2D {
+  private float x;
+  private float y;
+
+  public Point2D(float x, float y) {
+    this.x = x;
+    this.y = y;
+  }
+}
+
+//value class Point3D extends Point2D {
+//  private float z;
+//
+//  Point3D(float x, float y, float z) {
+//    super(x, y);
+//    this.z = z;
+//  }
+//}
+
 void main() {
-  Object windspeed = new Windspeed(10);
-  Object windspeed2 = new Windspeed(10);
+  Windspeed windspeed = new Windspeed(10);
+  Windspeed windspeed2 = new Windspeed(10);
 
   // new semantics for ==
   IO.println(windspeed == windspeed2);
