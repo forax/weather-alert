@@ -20,9 +20,9 @@ class WeatherExample {
 
     // 1
     var weatherData = WeatherComputation.toWeatherData(hourlyData);
-    System.out.println(WeatherComputation.computeWeatherData(weatherData));
+    IO.println(WeatherComputation.computeWeatherData(weatherData));
 
     // 2
-    System.out.println(WeatherComputation.computeHourlyData(hourlyData));
+    IO.println(WeatherComputation.computeHourlyData(hourlyData));
   }
 }

@@ -20,5 +20,5 @@ class Windspeed {
 
 void main() {
   var windspeed = new Windspeed(10);
-  System.out.println(windspeed);
+  IO.println(windspeed);
 }

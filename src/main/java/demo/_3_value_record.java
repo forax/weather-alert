@@ -15,6 +15,6 @@ value record Windspeed(int value) {
 
 void main() {
   var windspeed = new Windspeed(10);
-  System.out.println(windspeed);
-  System.out.println(windspeed.getClass().isValue());
+  IO.println(windspeed);
+  IO.println(windspeed.getClass().isValue());
 }
