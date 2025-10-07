@@ -18,6 +18,7 @@ class Windspeed {
   }
 }
 
+// JEP 512: Compact Source Files and Instance Main Methods
 void main() {
   var windspeed = new Windspeed(10);
   IO.println(windspeed);
