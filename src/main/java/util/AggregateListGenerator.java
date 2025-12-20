@@ -14,7 +14,6 @@ import java.lang.constant.MethodTypeDesc;
 import java.lang.reflect.RecordComponent;
 
 import static java.lang.classfile.ClassFile.*;
-import static java.lang.classfile.ClassFile.JAVA_25_VERSION;
 import static java.lang.constant.ConstantDescs.*;
 import static java.lang.invoke.MethodHandles.Lookup.ClassOption.NESTMATE;
 import static java.lang.invoke.MethodHandles.Lookup.ClassOption.STRONG;
@@ -73,7 +72,7 @@ final class AggregateListGenerator {
     var thisClass = ClassDesc.of(lookupClass.getPackageName(), "AggregateListImpl");
     return ClassFile.of().build(thisClass, cb -> {
       // Class modifiers and extends/implements
-      cb.withVersion(JAVA_26_VERSION, PREVIEW_MINOR_VERSION);
+      cb.withVersion(JAVA_27_VERSION, PREVIEW_MINOR_VERSION);
       cb.withFlags(ACC_PUBLIC | ACC_FINAL);
       cb.withSuperclass(CD_Object);
       cb.withInterfaceSymbols(CD_AGGREGATE_LIST);

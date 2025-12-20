@@ -20,7 +20,7 @@ import java.util.Objects;
 
 import static java.lang.classfile.ClassFile.ACC_PRIVATE;
 import static java.lang.classfile.ClassFile.ACC_PUBLIC;
-import static java.lang.classfile.ClassFile.JAVA_26_VERSION;
+import static java.lang.classfile.ClassFile.JAVA_27_VERSION;
 import static java.lang.classfile.ClassFile.PREVIEW_MINOR_VERSION;
 import static java.lang.constant.ConstantDescs.*;
 import static java.lang.constant.ConstantDescs.CD_int;
@@ -192,7 +192,7 @@ public final class FlatListFactory {
             TEMPLATE_CLASS,
             classBuilder -> {
               classBuilder
-                  .withVersion(JAVA_26_VERSION, PREVIEW_MINOR_VERSION)
+                  .withVersion(JAVA_27_VERSION, PREVIEW_MINOR_VERSION)
                   .withFlags(ACC_PUBLIC | ClassFile.ACC_FINAL | ClassFile.ACC_IDENTITY)
                   .withSuperclass(CD_ABSTRACT_FLAT_LIST)
                   .withInterfaceSymbols(ConstantDescs.CD_List);
