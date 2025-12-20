@@ -41,7 +41,7 @@ No identity enables two optimizations:
 - **Scalarization**: Instances don't use heap memory when allocated with `new` (but CPU registers)
 - **Heap Flattening**: Fields of value classes are embedded directly inside container classes
 
-The value classes tries to be the best of both worlds (primitive types and identity classes).
+The value classes try to be the best of both worlds (primitive types and identity classes).
 
 
 ### **Declaration Syntax**
