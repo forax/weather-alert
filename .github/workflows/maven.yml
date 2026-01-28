@@ -17,6 +17,7 @@ jobs:
     - uses: actions/checkout@v4
     - name: Download Valhalla JDK
       run: |
+        cd ${{ runner.temp }}
         wget https://builds.shipilev.net/openjdk-jdk-valhalla/openjdk-jdk-valhalla-linux-x86_64-server.tar.xz
         unxz openjdk-jdk-valhalla-linux-x86_64-server.tar.xz
         gzip openjdk-jdk-valhalla-linux-x86_64-server.tar
