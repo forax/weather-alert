@@ -20,7 +20,7 @@ jobs:
         wget https://builds.shipilev.net/openjdk-jdk-valhalla/openjdk-jdk-valhalla-linux-x86_64-server.tar.xz
         unxz openjdk-jdk-valhalla-linux-x86_64-server.tar.xz
         gzip openjdk-jdk-valhalla-linux-x86_64-server.tar
-        rm openjdk-jdk-valhalla-linux-x86_64-server.tar.xz
+        rm openjdk-jdk-valhalla-linux-x86_64-server.tar
     - uses: actions/setup-java@v4
       with:
         distribution: 'jdkfile'
