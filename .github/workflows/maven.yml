@@ -24,7 +24,6 @@ jobs:
       with:
         distribution: 'jdkfile'
         jdkFile: openjdk-jdk-valhalla-linux-x86_64-server.tar.gz
-        java-version: '27.0.0'
         architecture: x64
     - name: Build with Maven
       run: |
