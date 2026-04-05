@@ -372,7 +372,7 @@ public final class FlatListFactory {
               codeBuilder
                   .aload(0)
                   .getfield(TEMPLATE_CLASS, "array", CD_Object.arrayType())
-                  .invokestatic(CD_VALUE_CLASS, "isFlatArray", MethodTypeDesc.of(CD_boolean, CD_Object))
+                  .invokestatic(CD_VALUE_CLASS, "isFlatArray", MethodTypeDesc.of(CD_boolean, CD_Object.arrayType()))
                   .ireturn();
             }));
   }
