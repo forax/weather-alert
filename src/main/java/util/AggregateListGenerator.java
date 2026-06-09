@@ -72,7 +72,7 @@ final class AggregateListGenerator {
     var thisClass = ClassDesc.of(lookupClass.getPackageName(), "AggregateListImpl");
     return ClassFile.of().build(thisClass, cb -> {
       // Class modifiers and extends/implements
-      cb.withVersion(JAVA_27_VERSION, PREVIEW_MINOR_VERSION);
+      cb.withVersion(JAVA_28_VERSION, PREVIEW_MINOR_VERSION);
       cb.withFlags(ACC_PUBLIC | ACC_FINAL);
       cb.withSuperclass(CD_Object);
       cb.withInterfaceSymbols(CD_AGGREGATE_LIST);
